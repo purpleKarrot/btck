@@ -12,6 +12,8 @@ project(BtcK
   LANGUAGES C CXX
   )
 
+list(APPEND CMAKE_MODULE_PATH "${BtcK_SOURCE_DIR}/cmake/modules")
+
 # https://gitlab.kitware.com/cmake/cmake/-/issues/27056
 if(WIN32)
   set(CMAKE_IMPORT_LIBRARY_PREFIX "")
@@ -103,6 +105,13 @@ option(BTCK_ENABLE_PYTHON "Build python extension" ON)
 if(BTCK_ENABLE_PYTHON)
   add_subdirectory(bindings/python)
   add_subdirectory(test/python)
+endif()
+
+option(BTCK_ENABLE_VALA "Enable Vala/Genie" OFF)
+if(BTCK_ENABLE_PYTHON)
+  add_subdirectory(bindings/vala)
+  add_subdirectory(test/genie)
+  add_subdirectory(test/vala)
 endif()
 
 add_library(btck SHARED)
