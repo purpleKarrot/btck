@@ -40,6 +40,8 @@ include(CPack)
 include(CTestUseLaunchers)
 include(GNUInstallDirs)
 
+add_subdirectory(test/c)
+
 
 block(PROPAGATE bitcoin_SOURCE_DIR)
   set(CMAKE_C_CLANG_TIDY "")
@@ -71,6 +73,50 @@ block(PROPAGATE bitcoin_SOURCE_DIR)
   FetchContent_GetProperties(bitcoin SOURCE_DIR bitcoin_SOURCE_DIR)
 endblock()
 
+
+add_library(btck SHARED)
+add_library(btck::btck ALIAS btck)
+
+target_sources(btck
+  PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
+    include/btck/btck.h
+  PRIVATE
+    src/block.cpp
+    src/chain.cpp
+    src/script_pubkey.cpp
+    src/transaction.cpp
+    src/transaction_output.cpp
+    src/verify.cpp
+  )
+
+target_compile_features(btck PRIVATE cxx_std_20)
+
+set_target_properties(btck PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN ON
+  VERSION ${btck_VERSION}
+  SOVERSION ${btck_VERSION_MAJOR}
+  DLL_NAME_WITH_SOVERSION ON
+  GNUtoMS ON
+  )
+
+# bitcoin does not properly set the interface include directories.
+target_include_directories(btck PRIVATE
+  ${bitcoin_SOURCE_DIR}/src
+  )
+
+target_link_libraries(btck PRIVATE
+  bitcoinkernel
+  )
+
+install(TARGETS btck EXPORT btck-targets
+  FILE_SET HEADERS
+  )
+
+install(EXPORT btck-targets DESTINATION lib/cmake/btck
+  FILE btck-config.cmake
+  NAMESPACE btck::
+  )
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(btck-config-version.cmake
