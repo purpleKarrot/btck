@@ -105,6 +105,12 @@ if(BTCK_ENABLE_PYTHON)
   add_subdirectory(test/python)
 endif()
 
+option(BTCK_ENABLE_VALA "Enable Vala/Genie" OFF)
+if(BTCK_ENABLE_PYTHON)
+  add_subdirectory(bindings/vala)
+  add_subdirectory(test/vala)
+endif()
+
 add_library(btck SHARED)
 add_library(BtcK::btck ALIAS btck)
 
