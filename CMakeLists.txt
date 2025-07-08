@@ -41,6 +41,7 @@ include(CTestUseLaunchers)
 include(GNUInstallDirs)
 
 add_subdirectory(test/c)
+add_subdirectory(test/cpp)
 
 
 block(PROPAGATE bitcoin_SOURCE_DIR)
@@ -109,7 +110,18 @@ target_link_libraries(btck PRIVATE
   bitcoinkernel
   )
 
-install(TARGETS btck EXPORT btck-targets
+add_library(btck-cpp INTERFACE)
+add_library(btck::btck-cpp ALIAS btck-cpp)
+
+target_sources(btck-cpp
+  PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
+    include/btck/btck.hpp
+  )
+
+target_compile_features(btck-cpp INTERFACE cxx_std_20)
+target_link_libraries(btck-cpp INTERFACE btck::btck)
+
+install(TARGETS btck btck-cpp EXPORT btck-targets
   FILE_SET HEADERS
   )
 
