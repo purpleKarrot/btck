@@ -1,3 +1,22 @@
 [
   { "include": ["\"btck/btck.h\"", "private", "<btck/btck.h>", "public"] },
+
+  { "include": ["<abstract.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<boolobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<bytesobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<descrobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<exports.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<longobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<methodobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<modsupport.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<moduleobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<object.h>", "private", "<Python.h>", "public"] },
+  { "include": ["\"object.h\"", "private", "<Python.h>", "public"] },
+  { "include": ["<objimpl.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pybuffer.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pyerrors.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pymacro.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pyport.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pytypedefs.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<sliceobject.h>", "private", "<Python.h>", "public"] },
 ]
