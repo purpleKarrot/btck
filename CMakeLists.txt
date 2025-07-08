@@ -61,6 +61,12 @@ if(BTCK_ENABLE_PYTHON)
   add_subdirectory(test/python)
 endif()
 
+option(BTCK_ENABLE_VALA "Enable Vala/Genie" OFF)
+if(BTCK_ENABLE_PYTHON)
+  add_subdirectory(bindings/vala)
+  add_subdirectory(test/vala)
+endif()
+
 
 block(PROPAGATE bitcoin_SOURCE_DIR)
   set(CMAKE_C_CLANG_TIDY "")
