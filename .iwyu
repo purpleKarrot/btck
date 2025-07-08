@@ -22,4 +22,7 @@
 
   { "include": ["\"jni.h\"", "private", "<jni.h>", "public"] },
   { "include": ["\"jni_md.h\"", "private", "<jni.h>", "public"] },
+
+  { "include": ["<luaconf.h>", "public", "<lauxlib.h>", "public"] },
+  { "include": ["<luaconf.h>", "public", "<lua.h>", "public"] },
 ]
