@@ -87,6 +87,12 @@ endif()
 add_subdirectory(test/c)
 add_subdirectory(test/cpp)
 
+option(BTCK_ENABLE_PYTHON "Build python extension" ON)
+if(BTCK_ENABLE_PYTHON)
+  add_subdirectory(bindings/python)
+  add_subdirectory(test/python)
+endif()
+
 add_library(btck SHARED)
 add_library(BtcK::btck ALIAS btck)
 
