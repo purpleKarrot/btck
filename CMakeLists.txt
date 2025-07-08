@@ -43,6 +43,12 @@ include(GNUInstallDirs)
 add_subdirectory(test/c)
 add_subdirectory(test/cpp)
 
+option(BTCK_ENABLE_JAVA "Build Java extension" OFF)
+if(BTCK_ENABLE_JAVA)
+  add_subdirectory(bindings/java)
+  # add_subdirectory(test/java)
+endif()
+
 option(BTCK_ENABLE_PYTHON "Build python extension" ON)
 if(BTCK_ENABLE_PYTHON)
   add_subdirectory(bindings/python)
