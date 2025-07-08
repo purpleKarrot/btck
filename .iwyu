@@ -1,2 +1,3 @@
 [
+  { "include": ["\"btck/btck.h\"", "private", "<btck/btck.h>", "public"] },
 ]

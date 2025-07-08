@@ -84,6 +84,52 @@ if(BTCK_RUN_IWYU)
   endforeach()
 endif()
 
+add_subdirectory(test/c)
+
+add_library(btck SHARED)
+add_library(BtcK::btck ALIAS btck)
+
+target_sources(btck
+  PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
+    include/btck/btck.h
+  PRIVATE
+    src/block.cpp
+    src/chain.cpp
+    src/script_pubkey.cpp
+    src/transaction.cpp
+    src/transaction_output.cpp
+    src/verify.cpp
+  )
+
+target_compile_features(btck PRIVATE cxx_std_20)
+
+set_target_properties(btck PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN ON
+  VERSION ${BtcK_VERSION}
+  SOVERSION ${BtcK_VERSION_MAJOR}
+  DLL_NAME_WITH_SOVERSION ON
+  GNUtoMS ON
+  )
+
+# bitcoin does not properly set the interface include directories.
+target_include_directories(btck PRIVATE
+  ${bitcoin_SOURCE_DIR}/src
+  )
+
+target_link_libraries(btck PRIVATE
+  bitcoinkernel
+  )
+
+install(TARGETS btck EXPORT btck-targets
+  FILE_SET HEADERS
+  )
+
+install(EXPORT btck-targets DESTINATION share/cmake
+  FILE btck-config.cmake
+  NAMESPACE BtcK::
+  )
+
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(btck-config-version.cmake
   COMPATIBILITY SameMajorVersion
