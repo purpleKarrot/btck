@@ -43,6 +43,12 @@ include(GNUInstallDirs)
 add_subdirectory(test/c)
 add_subdirectory(test/cpp)
 
+option(BTCK_ENABLE_PYTHON "Build python extension" ON)
+if(BTCK_ENABLE_PYTHON)
+  add_subdirectory(bindings/python)
+  add_subdirectory(test/python)
+endif()
+
 
 block(PROPAGATE bitcoin_SOURCE_DIR)
   set(CMAKE_C_CLANG_TIDY "")
