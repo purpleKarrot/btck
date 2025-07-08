@@ -19,4 +19,7 @@
   { "include": ["<pyport.h>", "private", "<Python.h>", "public"] },
   { "include": ["<pytypedefs.h>", "private", "<Python.h>", "public"] },
   { "include": ["<sliceobject.h>", "private", "<Python.h>", "public"] },
+
+  { "include": ["\"jni.h\"", "private", "<jni.h>", "public"] },
+  { "include": ["\"jni_md.h\"", "private", "<jni.h>", "public"] },
 ]
