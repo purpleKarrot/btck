@@ -85,6 +85,7 @@ if(BTCK_RUN_IWYU)
 endif()
 
 add_subdirectory(test/c)
+add_subdirectory(test/cpp)
 
 add_library(btck SHARED)
 add_library(BtcK::btck ALIAS btck)
@@ -121,7 +122,18 @@ target_link_libraries(btck PRIVATE
   bitcoinkernel
   )
 
-install(TARGETS btck EXPORT btck-targets
+add_library(btck-cpp INTERFACE)
+add_library(BtcK::btck-cpp ALIAS btck-cpp)
+
+target_sources(btck-cpp
+  PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
+    include/btck/btck.hpp
+  )
+
+target_compile_features(btck-cpp INTERFACE cxx_std_20)
+target_link_libraries(btck-cpp INTERFACE BtcK::btck)
+
+install(TARGETS btck btck-cpp EXPORT btck-targets
   FILE_SET HEADERS
   )
 
