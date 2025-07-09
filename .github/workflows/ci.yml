@@ -1,0 +1,226 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runs-on }}
+    env: ${{ matrix.env }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            runs-on: ubuntu-latest
+            dependencies: >
+              ccache
+              libboost-dev
+              libcmocka-dev
+              libgtest-dev
+              mypy
+            env:
+              CC: gcc-14
+              CXX: g++-14
+              CMAKE_C_COMPILER_LAUNCHER: ccache
+              CMAKE_CXX_COMPILER_LAUNCHER: ccache
+            cpack-generator: TXZ
+
+          - name: macOS
+            runs-on: macos-15
+            dependencies: >
+              boost
+              ccache
+              cmocka
+              googletest
+              mypy
+            env:
+              CC: clang
+              CXX: clang++
+              CMAKE_C_COMPILER_LAUNCHER: ccache
+              CMAKE_CXX_COMPILER_LAUNCHER: ccache
+            cpack-generator: 7Z
+
+          - name: Windows-GNU
+            runs-on: windows-2025
+            dependencies: >
+              boost-multi-index
+              cmocka
+              gtest
+            config-options: >
+              -DVCPKG_TARGET_TRIPLET=x64-mingw-static
+            env:
+              CC: gcc
+              CXX: g++
+              CMAKE_C_COMPILER_LAUNCHER: ccache
+              CMAKE_CXX_COMPILER_LAUNCHER: ccache
+              CMAKE_TOOLCHAIN_FILE: C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+              VCPKG_DEFAULT_TRIPLET: x64-mingw-static
+            cpack-generator: 7Z
+
+          - name: Windows-MSVC
+            runs-on: windows-2025
+            dependencies: >
+              boost-multi-index
+              cmocka
+              gtest
+            env:
+              CC: cl
+              CXX: cl
+              CMAKE_TOOLCHAIN_FILE: C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+            cpack-generator: 7Z
+
+          - name: IWYU
+            runs-on: ubuntu-latest
+            dependencies: >
+              ccache
+              iwyu
+              libboost-dev
+              libcmocka-dev
+              libgtest-dev
+              mypy
+            config-options: >
+              -DCMAKE_C_INCLUDE_WHAT_YOU_USE=iwyu
+              -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=iwyu
+              -DCMAKE_LINK_WHAT_YOU_USE=ON
+            env:
+              CC: clang-17
+              CXX: clang++-17
+              CMAKE_C_COMPILER_LAUNCHER: ccache
+              CMAKE_CXX_COMPILER_LAUNCHER: ccache
+
+          - name: Tidy
+            runs-on: ubuntu-latest
+            dependencies: >
+              ccache
+              libboost-dev
+              libcmocka-dev
+              libgtest-dev
+              mypy
+            config-options: >
+              -DCMAKE_C_CLANG_TIDY=clang-tidy-18
+              -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
+            env:
+              CC: clang-18
+              CXX: clang++-18
+              CMAKE_C_COMPILER_LAUNCHER: ccache
+              CMAKE_CXX_COMPILER_LAUNCHER: ccache
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies (Linux)
+        if: matrix.dependencies && runner.os == 'Linux'
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y --no-install-recommends ${{ matrix.dependencies }}
+
+      - name: Install Dependencies (macOS)
+        if: matrix.dependencies && runner.os == 'macOS'
+        run: brew install ${{ matrix.dependencies }}
+
+      - name: Install Dependencies (Windows)
+        if: matrix.dependencies && runner.os == 'Windows'
+        run: vcpkg install ${{ matrix.dependencies }}
+
+      - name: Add MSVC tools to PATH (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up latest Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Setup pytest
+        run: pip install pytest
+
+      - name: Compiler Cache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ matrix.name }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ matrix.name }}-
+
+      - name: Reset ccache stats
+        env:
+          CCACHE_BASEDIR: ${{ github.workspace }}
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
+        run: |
+          ccache -p
+          ccache -z
+
+      - name: Run CTest dashboard script
+        env:
+          CCACHE_BASEDIR: ${{ github.workspace }}
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
+          # CTEST_USE_INSTRUMENTATION: 1
+          # CTEST_USE_VERBOSE_INSTRUMENTATION: 1
+          # CTEST_EXPERIMENTAL_INSTRUMENTATION: a37d1069-1972-4901-b9c9-f194aaf2b6e0
+        shell: ctest -C Release -S {0} -VV
+        run: |
+          cmake_minimum_required(VERSION 3.31)
+
+          set(CTEST_SITE "github.com")
+          set(CTEST_BUILD_NAME "${{ matrix.name }}")
+          set(CTEST_CHANGE_ID "${{ github.event.pull_request.number }}")
+          set(CTEST_SOURCE_DIRECTORY "$ENV{GITHUB_WORKSPACE}")
+          set(CTEST_BINARY_DIRECTORY "$ENV{GITHUB_WORKSPACE}/build")
+
+          ctest_start("Experimental")
+          ctest_submit(PARTS "Start")
+
+          set(CTEST_UPDATE_COMMAND "git")
+          set(CTEST_UPDATE_VERSION_ONLY ON)
+          ctest_update()
+          ctest_submit(PARTS "Update")
+
+          set(CTEST_CMAKE_GENERATOR "Ninja")
+          #set(CTEST_USE_LAUNCHERS ON)
+          set(config_options ${{ matrix.config-options }})
+          ctest_configure(OPTIONS "${config_options}")
+          ctest_submit(PARTS "Configure")
+
+          cmake_host_system_information(RESULT nproc QUERY NUMBER_OF_LOGICAL_CORES)
+          ctest_build(PARALLEL_LEVEL ${nproc})
+          ctest_submit(PARTS "Build")
+
+          set(CPACK_GENERATOR ${{ matrix.cpack-generator }})
+          if(CPACK_GENERATOR)
+            execute_process(COMMAND "${CMAKE_CPACK_COMMAND}" -G "${CPACK_GENERATOR}"
+              "-DCPACK_THREADS=${nproc}"
+              WORKING_DIRECTORY "${CTEST_BINARY_DIRECTORY}"
+              OUTPUT_VARIABLE cpack_output
+              )
+            set(package_regex "CPack: - package: ([^\n;]+) generated.")
+            string(REGEX MATCHALL "${package_regex}" matches "${cpack_output}")
+            string(REGEX REPLACE "${package_regex}" "\\1" files "${matches}")
+            ctest_upload(FILES ${files})
+            ctest_submit(PARTS "Upload")
+          endif()
+
+          set(CTEST_MEMORYCHECK_COMMAND "${{ matrix.memorycheck-command }}")
+          set(CTEST_MEMORYCHECK_TYPE "${{ matrix.memorycheck-type }}")
+          if(CTEST_MEMORYCHECK_COMMAND OR CTEST_MEMORYCHECK_TYPE)
+            ctest_memcheck(PARALLEL_LEVEL ${nproc})
+            ctest_submit(PARTS "MemCheck")
+          else()
+            ctest_test(PARALLEL_LEVEL ${nproc})
+            ctest_submit(PARTS "Test")
+          endif()
+
+          set(CTEST_COVERAGE_COMMAND "${{ matrix.coverage-command }}")
+          if(CTEST_COVERAGE_COMMAND)
+            ctest_coverage()
+            ctest_submit(PARTS "Coverage")
+          endif()
+
+          ctest_submit(PARTS "Done")
+
+      - name: Print ccache stats
+        env:
+          CCACHE_BASEDIR: ${{ github.workspace }}
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
+        run: ccache -s
