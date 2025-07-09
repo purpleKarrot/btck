@@ -1,0 +1,3 @@
+{
+  "dependencies": ["boost-multi-index", "cmocka", "gtest"]
+}
