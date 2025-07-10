@@ -2,6 +2,9 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+# https://gitlab.kitware.com/cmake/cmake/-/issues/27057
+set(CMAKE_GNUtoMS ON)
+
 cmake_minimum_required(VERSION 3.31...4.0)
 project(btck
   VERSION 0.21.0
