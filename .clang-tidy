@@ -1,0 +1,16 @@
+---
+Checks: >-
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  modernize-*,
+  -modernize-avoid-c-arrays,
+  performance-*,
+  -performance-no-int-to-ptr,
+  readability-*,
+  -readability-identifier-length,
+HeaderFilterRegex: '.*\.hpp$'
+UseColor: true
+...
