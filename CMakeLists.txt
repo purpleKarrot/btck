@@ -9,6 +9,14 @@ project(BtcK
   LANGUAGES C CXX
   )
 
+# https://gitlab.kitware.com/cmake/cmake/-/issues/27056
+if(WIN32)
+  set(CMAKE_IMPORT_LIBRARY_PREFIX "")
+  set(CMAKE_SHARED_LIBRARY_PREFIX "")
+  set(CMAKE_SHARED_MODULE_PREFIX  "")
+  set(CMAKE_STATIC_LIBRARY_PREFIX "")
+endif()
+
 enable_testing()
 include(CPack)
 include(CTestUseLaunchers)
