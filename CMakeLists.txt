@@ -14,6 +14,36 @@ include(CPack)
 include(CTestUseLaunchers)
 include(GNUInstallDirs)
 
+block(PROPAGATE bitcoin_SOURCE_DIR)
+  set(CMAKE_C_CLANG_TIDY "")
+  set(CMAKE_C_INCLUDE_WHAT_YOU_USE "")
+  set(CMAKE_CXX_CLANG_TIDY "")
+  set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "")
+  set(CMAKE_LINK_WHAT_YOU_USE "")
+
+  set(ENABLE_WALLET OFF)
+  set(BUILD_WALLET_TOOL OFF)
+  set(BUILD_BENCH OFF)
+  set(BUILD_CLI OFF)
+  set(BUILD_DAEMON OFF)
+  set(BUILD_BITCOIN_BIN OFF)
+  set(BUILD_SHARED_LIBS OFF)
+  set(BUILD_TESTS OFF)
+  set(BUILD_TX OFF)
+  set(BUILD_UTIL OFF)
+  set(ENABLE_EXTERNAL_SIGNER OFF)
+  set(BUILD_KERNEL_LIB ON)
+
+  include(FetchContent)
+  FetchContent_Declare(bitcoin EXCLUDE_FROM_ALL
+    GIT_REPOSITORY https://github.com/bitcoin/bitcoin.git
+    GIT_TAG        v29.0
+    GIT_SHALLOW    ON
+    )
+  FetchContent_MakeAvailable(bitcoin)
+  FetchContent_GetProperties(bitcoin SOURCE_DIR bitcoin_SOURCE_DIR)
+endblock()
+
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(btck-config-version.cmake
   COMPATIBILITY SameMajorVersion
