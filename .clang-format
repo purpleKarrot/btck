@@ -1,0 +1,57 @@
+---
+BasedOnStyle: LLVM
+AlignAfterOpenBracket: BlockIndent
+AlignOperands: DontAlign
+AllowShortFunctionsOnASingleLine: InlineOnly
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: false
+BraceWrapping:
+  AfterClass:            true
+  AfterControlStatement: false
+  AfterEnum:             true
+  AfterExternBlock:      false
+  AfterFunction:         true
+  AfterNamespace:        false
+  AfterObjCDeclaration:  true
+  AfterStruct:           true
+  AfterUnion:            true
+  BeforeCatch:           false
+  BeforeElse:            true
+  IndentBraces:          false
+  SplitEmptyFunction:    false
+  SplitEmptyNamespace:   false
+  SplitEmptyRecord:      false
+BreakBeforeBraces: Custom
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+ColumnLimit: 120
+CommentPragmas: '^ IWYU pragma:'
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:    '^<[a-z_]+>$'
+    Priority: 1
+  - Regex:    '^<[^./]+\.h>$'
+    Priority: 2
+  - Regex:    '^<'
+    Priority: 3
+  - Regex:    '^"'
+    Priority: 4
+IncludeIsMainRegex: '(_test.*)?$'
+IndentCaseLabels: true
+IndentPPDirectives: AfterHash
+ObjCSpaceBeforeProtocolList: false
+PackConstructorInitializers: Never
+PenaltyReturnTypeOnItsOwnLine: 200
+PointerAlignment: Left
+ReflowComments: false
+SpacesBeforeTrailingComments: 2
+StatementMacros:
+  - PyObject_HEAD
+Macros:
+  - PyObject_HEAD_INIT(type)={{0}, (type)},
+  - PyVarObject_HEAD_INIT(type, size)={{{0}, (type)}, (size)},
+QualifierAlignment: Right
+...
