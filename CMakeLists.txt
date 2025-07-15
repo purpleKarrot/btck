@@ -20,6 +20,21 @@ if(WIN32)
   set(CMAKE_STATIC_LIBRARY_PREFIX "")
 endif()
 
+# https://gitlab.kitware.com/cmake/cmake/-/issues/25686
+function(add_test)
+  _add_test(${ARGV})
+  cmake_parse_arguments(PARSE_ARGV 0 arg "" NAME COMMAND)
+  list(GET arg_COMMAND 0 command)
+  if(TARGET "${command}" OR command MATCHES "::")
+    set(dll_dirs "$<TARGET_RUNTIME_DLL_DIRS:${command}>")
+    set(is_empty "$<STREQUAL:${dll_dirs},>")
+    set(env_op "PATH=path_list_append:")
+    set_property(TEST ${arg_NAME} APPEND PROPERTY ENVIRONMENT_MODIFICATION
+      "$<$<NOT:${is_empty}>:${env_op}$<JOIN:${dll_dirs},$<SEMICOLON>${env_op}>>"
+    )
+  endif()
+endfunction()
+
 enable_testing()
 include(CPack)
 include(CTestUseLaunchers)
