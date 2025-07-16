@@ -39,25 +39,16 @@ jobs:
 
           - name: Windows-GNU
             runs-on: windows-2025
-            dependencies: >
-              boost-multi-index
-              cmocka
-              gtest
             config-options: >
               -DVCPKG_TARGET_TRIPLET=x64-mingw-static
             env:
               CC: gcc
               CXX: g++
               CMAKE_TOOLCHAIN_FILE: C:/vcpkg/scripts/buildsystems/vcpkg.cmake
-              VCPKG_DEFAULT_TRIPLET: x64-mingw-static
             cpack-generator: 7Z
 
           - name: Windows-MSVC
             runs-on: windows-2025
-            dependencies: >
-              boost-multi-index
-              cmocka
-              gtest
             env:
               CC: cl
               CXX: cl
@@ -109,10 +100,6 @@ jobs:
       - name: Install Dependencies (macOS)
         if: matrix.dependencies && runner.os == 'macOS'
         run: brew install ${{ matrix.dependencies }}
-
-      - name: Install Dependencies (Windows)
-        if: matrix.dependencies && runner.os == 'Windows'
-        run: vcpkg install ${{ matrix.dependencies }}
 
       - name: Add MSVC tools to PATH (Windows)
         if: runner.os == 'Windows'
