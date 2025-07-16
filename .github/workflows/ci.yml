@@ -134,14 +134,6 @@ jobs:
           restore-keys: |
             ccache-${{ matrix.name }}-
 
-      - name: Reset ccache stats
-        env:
-          CCACHE_BASEDIR: ${{ github.workspace }}
-          CCACHE_DIR: ${{ github.workspace }}/.ccache
-        run: |
-          ccache -p
-          ccache -z
-
       - name: Run CTest dashboard script
         env:
           CCACHE_BASEDIR: ${{ github.workspace }}
@@ -161,6 +153,8 @@ jobs:
           set(CTEST_SOURCE_DIRECTORY "$ENV{GITHUB_WORKSPACE}")
           set(CTEST_BINARY_DIRECTORY "$ENV{GITHUB_WORKSPACE}/build")
 
+          execute_process(COMMAND ccache -z)
+
           ctest_start("Experimental")
           ctest_submit(PARTS "Start")
 
@@ -178,6 +172,12 @@ jobs:
           cmake_host_system_information(RESULT nproc QUERY NUMBER_OF_LOGICAL_CORES)
           ctest_build(PARALLEL_LEVEL ${nproc})
           ctest_submit(PARTS "Build")
+
+          execute_process(COMMAND ccache -s
+            OUTPUT_FILE "ccache-stats.txt"
+            )
+          list(APPEND CTEST_NOTES_FILES "ccache-stats.txt")
+          ctest_submit(PARTS "Notes")
 
           set(CPACK_GENERATOR ${{ matrix.cpack-generator }})
           if(CPACK_GENERATOR)
@@ -210,9 +210,3 @@ jobs:
           endif()
 
           ctest_submit(PARTS "Done")
-
-      - name: Print ccache stats
-        env:
-          CCACHE_BASEDIR: ${{ github.workspace }}
-          CCACHE_DIR: ${{ github.workspace }}/.ccache
-        run: ccache -s
