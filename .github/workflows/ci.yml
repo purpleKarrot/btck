@@ -65,8 +65,7 @@ jobs:
               libgtest-dev
               mypy
             config-options: >
-              -DCMAKE_C_INCLUDE_WHAT_YOU_USE=iwyu
-              -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=iwyu
+              -DBTCK_RUN_IWYU=ON
               -DCMAKE_LINK_WHAT_YOU_USE=ON
             env:
               CC: clang-17

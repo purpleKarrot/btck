@@ -1,0 +1,11 @@
+[
+  { "include": ["\"gtest/gtest.h\"", "private", "<gtest/gtest.h>", "public"] },
+  { "include": ["<exports.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<modsupport.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<moduleobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<object.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pybuffer.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pymacro.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pyport.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pytypedefs.h>", "private", "<Python.h>", "public"] },
+]
