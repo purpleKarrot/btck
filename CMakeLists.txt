@@ -89,6 +89,11 @@ endif()
 add_subdirectory(test/c)
 add_subdirectory(test/cpp)
 
+option(BTCK_BUILD_DOC "Build BtcK Documentation" OFF)
+if(BTCK_BUILD_DOC)
+  add_subdirectory(doc)
+endif()
+
 option(BTCK_ENABLE_GO "Build Go extension" ON)
 if(BTCK_ENABLE_GO)
   add_subdirectory(test/go)

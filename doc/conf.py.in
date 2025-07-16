@@ -1,0 +1,16 @@
+# Copyright (c) 2025-present The Bitcoin Core developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+project = '@PROJECT_NAME@'
+copyright = '2025, The Bitcoin Core developers'
+author = 'The Bitcoin Core developers'
+release = '@PROJECT_VERSION@'
+
+extensions = ['sphinx_tabs.tabs']
+templates_path = ['@CMAKE_CURRENT_SOURCE_DIR@/templates']
+
+html_static_path = ['@CMAKE_CURRENT_SOURCE_DIR@/static']
+html_theme = 'furo'
+html_title =  f'{project} {release} Documentation'
+html_short_title = f'{release} Documentation'
