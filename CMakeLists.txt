@@ -61,6 +61,12 @@ if(BTCK_ENABLE_PYTHON)
   add_subdirectory(test/python)
 endif()
 
+option(BTCK_ENABLE_SWIFT "Build Swift extension" ON)
+if(BTCK_ENABLE_SWIFT)
+  add_subdirectory(bindings/swift)
+  add_subdirectory(test/swift)
+endif()
+
 option(BTCK_ENABLE_VALA "Enable Vala/Genie" OFF)
 if(BTCK_ENABLE_PYTHON)
   add_subdirectory(bindings/vala)

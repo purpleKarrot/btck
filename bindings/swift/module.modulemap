@@ -1,0 +1,4 @@
+module btck_c {
+  header "../../include/btck/btck.h"
+  export *
+}
