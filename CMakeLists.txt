@@ -44,6 +44,20 @@ block(PROPAGATE bitcoin_SOURCE_DIR)
   FetchContent_GetProperties(bitcoin SOURCE_DIR bitcoin_SOURCE_DIR)
 endblock()
 
+option(BTCK_RUN_IWYU "Run include-what-you-use with the compiler." OFF)
+if(BTCK_RUN_IWYU)
+  find_program(IWYU_COMMAND NAMES include-what-you-use iwyu)
+  if(NOT IWYU_COMMAND)
+    message(FATAL_ERROR "BTCK_RUN_IWYU is ON but include-what-you-use is not found!")
+  endif()
+  foreach(lang C CXX)
+    set(CMAKE_${lang}_INCLUDE_WHAT_YOU_USE ${IWYU_COMMAND}
+      -Xiwyu --mapping_file=${BtcK_SOURCE_DIR}/.iwyu
+      -w
+      )
+  endforeach()
+endif()
+
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(btck-config-version.cmake
   COMPATIBILITY SameMajorVersion
