@@ -1,0 +1,8 @@
+name = "Btck"
+uuid = "e3e2c1a0-0000-4000-8000-000000000001"
+authors = ["The Bitcoin Core developers"]
+version = "0.1.0"
+description = "Julia bindings for the btck C library"
+license = "MIT"
+[compat]
+julia = "1.6"
