@@ -22,8 +22,6 @@ jobs:
             env:
               CC: gcc-14
               CXX: g++-14
-              CMAKE_C_COMPILER_LAUNCHER: ccache
-              CMAKE_CXX_COMPILER_LAUNCHER: ccache
             cpack-generator: TXZ
 
           - name: macOS
@@ -37,8 +35,6 @@ jobs:
             env:
               CC: clang
               CXX: clang++
-              CMAKE_C_COMPILER_LAUNCHER: ccache
-              CMAKE_CXX_COMPILER_LAUNCHER: ccache
             cpack-generator: 7Z
 
           - name: Windows-GNU
@@ -52,8 +48,6 @@ jobs:
             env:
               CC: gcc
               CXX: g++
-              CMAKE_C_COMPILER_LAUNCHER: ccache
-              CMAKE_CXX_COMPILER_LAUNCHER: ccache
               CMAKE_TOOLCHAIN_FILE: C:/vcpkg/scripts/buildsystems/vcpkg.cmake
               VCPKG_DEFAULT_TRIPLET: x64-mingw-static
             cpack-generator: 7Z
@@ -86,8 +80,6 @@ jobs:
             env:
               CC: clang-17
               CXX: clang++-17
-              CMAKE_C_COMPILER_LAUNCHER: ccache
-              CMAKE_CXX_COMPILER_LAUNCHER: ccache
 
           - name: Tidy
             runs-on: ubuntu-latest
@@ -103,8 +95,6 @@ jobs:
             env:
               CC: clang-18
               CXX: clang++-18
-              CMAKE_C_COMPILER_LAUNCHER: ccache
-              CMAKE_CXX_COMPILER_LAUNCHER: ccache
 
     steps:
       - name: Checkout repository
@@ -156,6 +146,8 @@ jobs:
         env:
           CCACHE_BASEDIR: ${{ github.workspace }}
           CCACHE_DIR: ${{ github.workspace }}/.ccache
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
           # CTEST_USE_INSTRUMENTATION: 1
           # CTEST_USE_VERBOSE_INSTRUMENTATION: 1
           # CTEST_EXPERIMENTAL_INSTRUMENTATION: a37d1069-1972-4901-b9c9-f194aaf2b6e0
