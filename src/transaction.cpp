@@ -18,6 +18,7 @@
 #include "span.h"
 #include "transaction_output.hpp"
 #include "util/as_bytes.hpp"
+#include "util/error.hpp"
 
 namespace {
 
@@ -44,11 +45,15 @@ BtcK_Transaction::BtcK_Transaction(std::span<std::byte const> raw)
 
 extern "C" {
 
-auto BtcK_Transaction_New(void const* raw, std::size_t len) -> BtcK_Transaction*
+auto BtcK_Transaction_New(
+  void const* raw, std::size_t len, struct BtcK_Error** err
+) -> BtcK_Transaction*
 {
-  return BtcK_Transaction::New(
-    std::span{reinterpret_cast<std::byte const*>(raw), len}
-  );
+  return util::WrapFn(err, [=] {
+    return new BtcK_Transaction{
+      std::span{reinterpret_cast<std::byte const*>(raw), len}
+    };
+  });
 }
 
 auto BtcK_Transaction_Retain(BtcK_Transaction* self) -> BtcK_Transaction*

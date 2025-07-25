@@ -126,6 +126,8 @@ target_sources(btck
   PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
     include/btck/btck.h
   PRIVATE
+    src/util/error.c
+    src/util/error.cpp
     src/block.cpp
     src/chain.cpp
     src/script_pubkey.cpp

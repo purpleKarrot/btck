@@ -12,15 +12,19 @@
 
 #include "script/script.h"
 #include "util/as_bytes.hpp"
+#include "util/error.hpp"
 
 extern "C" {
 
-auto BtcK_ScriptPubkey_New(void const* raw, std::size_t len)
-  -> BtcK_ScriptPubkey*
+auto BtcK_ScriptPubkey_New(
+  void const* raw, std::size_t len, struct BtcK_Error** err
+) -> BtcK_ScriptPubkey*
 {
-  return BtcK_ScriptPubkey::New(
-    std::span{reinterpret_cast<std::uint8_t const*>(raw), len}
-  );
+  return util::WrapFn(err, [=] {
+    return new BtcK_ScriptPubkey{
+      std::span{reinterpret_cast<std::uint8_t const*>(raw), len}
+    };
+  });
 }
 
 auto BtcK_ScriptPubkey_Retain(BtcK_ScriptPubkey* self) -> BtcK_ScriptPubkey*

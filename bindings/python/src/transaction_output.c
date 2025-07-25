@@ -58,9 +58,9 @@ static PyObject* new(
     return NULL;
   }
 
-  return TransactionOutput_New(
-    BtcK_TransactionOutput_New(amount, ScriptPubkey_GetImpl(script_pubkey))
-  );
+  return TransactionOutput_New(BtcK_TransactionOutput_New(
+    amount, ScriptPubkey_GetImpl(script_pubkey), NULL
+  ));
 }
 
 static PyObject* get_amount(struct Self const* self, void* Py_UNUSED(closure))
@@ -72,7 +72,9 @@ static PyObject* get_script_pubkey(
   struct Self const* self, void* Py_UNUSED(closure)
 )
 {
-  return ScriptPubkey_New(BtcK_TransactionOutput_GetScriptPubkey(self->impl));
+  return ScriptPubkey_New(
+    BtcK_TransactionOutput_GetScriptPubkey(self->impl, NULL)
+  );
 }
 
 PyObject* TransactionOutput_New(struct BtcK_TransactionOutput* txout)

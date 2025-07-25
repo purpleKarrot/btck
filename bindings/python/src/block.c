@@ -69,7 +69,7 @@ static PyObject* new(
     return NULL;
   }
 
-  return Block_New(BtcK_Block_New(raw.buf, raw.len));
+  return Block_New(BtcK_Block_New(raw.buf, raw.len, NULL));
 }
 
 static PyObject* get_hash(struct Self const* self, void* Py_UNUSED(closure))

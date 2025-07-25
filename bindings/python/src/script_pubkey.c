@@ -58,7 +58,7 @@ static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
     return NULL;
   }
 
-  return ScriptPubkey_New(BtcK_ScriptPubkey_New(buffer.buf, buffer.len));
+  return ScriptPubkey_New(BtcK_ScriptPubkey_New(buffer.buf, buffer.len, NULL));
 }
 
 static PyObject* richcmp(struct Self const* self, PyObject* other, int op)

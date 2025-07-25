@@ -32,58 +32,96 @@ struct BtcK_ScriptPubkey;
 struct BtcK_Transaction;
 struct BtcK_TransactionOutput;
 
+struct BtcK_Error;
+
+BTCK_API struct BtcK_Error* BtcK_Error_New(
+  char const* domain, int code, char const* message
+);
+
+BTCK_API void BtcK_Error_Free(struct BtcK_Error* error);
+
+BTCK_API int BtcK_Error_Code(struct BtcK_Error const* error);
+BTCK_API char const* BtcK_Error_Domain(struct BtcK_Error const* error);
+BTCK_API char const* BtcK_Error_Message(struct BtcK_Error const* error);
+
+/*****************************************************************************/
+
 #define BtcK_BlockHash_SIZE 32
 struct BtcK_BlockHash
 {
   unsigned char data[BtcK_BlockHash_SIZE];
 };
 
+/*****************************************************************************/
+
 BTCK_API struct BtcK_ScriptPubkey* BtcK_ScriptPubkey_New(
-  void const* raw, size_t len
+  void const* raw, size_t len, struct BtcK_Error** err
 );
+
 BTCK_API struct BtcK_ScriptPubkey* BtcK_ScriptPubkey_Retain(
   struct BtcK_ScriptPubkey* self
 );
+
 BTCK_API void BtcK_ScriptPubkey_Release(struct BtcK_ScriptPubkey* self);
+
 BTCK_API bool BtcK_ScriptPubkey_Equal(
   struct BtcK_ScriptPubkey const* left, struct BtcK_ScriptPubkey const* right
 );
+
 BTCK_API void const* BtcK_ScriptPubkey_AsBytes(
   struct BtcK_ScriptPubkey const* self, size_t* len
 );
 
+/*****************************************************************************/
+
 BTCK_API struct BtcK_TransactionOutput* BtcK_TransactionOutput_New(
-  int64_t amount, struct BtcK_ScriptPubkey const* script_pubkey
+  int64_t amount,
+  struct BtcK_ScriptPubkey const* script_pubkey,
+  struct BtcK_Error** err
 );
+
 BTCK_API struct BtcK_TransactionOutput* BtcK_TransactionOutput_Retain(
   struct BtcK_TransactionOutput* self
 );
+
 BTCK_API void BtcK_TransactionOutput_Release(
   struct BtcK_TransactionOutput* self
 );
+
 BTCK_API int64_t
 BtcK_TransactionOutput_GetAmount(struct BtcK_TransactionOutput const* self);
+
 BTCK_API struct BtcK_ScriptPubkey* BtcK_TransactionOutput_GetScriptPubkey(
-  struct BtcK_TransactionOutput const* self
+  struct BtcK_TransactionOutput const* self, struct BtcK_Error** err
 );
 
+/*****************************************************************************/
+
 BTCK_API struct BtcK_Transaction* BtcK_Transaction_New(
-  void const* raw, size_t len
+  void const* raw, size_t len, struct BtcK_Error** err
 );
+
 BTCK_API struct BtcK_Transaction* BtcK_Transaction_Retain(
   struct BtcK_Transaction* self
 );
+
 BTCK_API void BtcK_Transaction_Release(struct BtcK_Transaction* self);
+
 BTCK_API size_t BtcK_Transaction_GetSize(struct BtcK_Transaction const* self);
+
 BTCK_API struct BtcK_TransactionOutput* BtcK_Transaction_At(
   struct BtcK_Transaction const* self, size_t idx
 );
+
 BTCK_API void const* BtcK_Transaction_AsBytes(
   struct BtcK_Transaction const* self, size_t* len
 );
+
 BTCK_API char const* BtcK_Transaction_ToString(
   struct BtcK_Transaction const* self, size_t* len
 );
+
+/*****************************************************************************/
 
 // enum class VerificationError
 // {
@@ -120,19 +158,31 @@ BTCK_API void BtcK_BlockHash_Init(
 
 // auto as_bytes(BlockHash const& self) -> std::span<std::byte const, 32>;
 
-BTCK_API struct BtcK_Block* BtcK_Block_New(void const* raw, size_t len);
+/*****************************************************************************/
+
+BTCK_API struct BtcK_Block* BtcK_Block_New(
+  void const* raw, size_t len, struct BtcK_Error** err
+);
+
 BTCK_API struct BtcK_Block* BtcK_Block_Retain(struct BtcK_Block* self);
+
 BTCK_API void BtcK_Block_Release(struct BtcK_Block* self);
+
 BTCK_API void BtcK_Block_GetHash(
   struct BtcK_Block const* self, struct BtcK_BlockHash* out
 );
+
 BTCK_API size_t BtcK_Block_GetSize(struct BtcK_Block const* self);
+
 BTCK_API struct BtcK_Transaction* BtcK_Block_At(
   struct BtcK_Block const* self, size_t idx
 );
+
 BTCK_API void const* BtcK_Block_AsBytes(
   struct BtcK_Block const* self, size_t* len
 );
+
+/*****************************************************************************/
 
 // enum class ValidationState
 // {
@@ -170,14 +220,12 @@ BTCK_API void const* BtcK_Block_AsBytes(
 // [CCode (cname = "analyze_func")]
 // public delegate double AnalyzeFunc (int a, int b);
 
-// enum class ChainType
-// {
-//   MAINNET = 0,
-//   TESTNET,
-//   TESTNET_4,
-//   SIGNET,
-//   REGTEST,
-// };
+typedef uint8_t BtcK_ChainType;
+#define BtcK_ChainType_MAINNET (BtcK_ChainType(0))
+#define BtcK_ChainType_TESTNET (BtcK_ChainType(1))
+#define BtcK_ChainType_TESTNET_4 (BtcK_ChainType(2))
+#define BtcK_ChainType_SIGNET (BtcK_ChainType(3))
+#define BtcK_ChainType_REGTEST (BtcK_ChainType(4))
 
 // using Log = std::function<void(std::string_view)>;
 

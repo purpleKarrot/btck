@@ -29,7 +29,7 @@ jlong Java_Transaction_construct(JNIEnv* env, jclass clazz, jobject raw)
     return 0;
   }
 
-  return (jlong)(uintptr_t)BtcK_Transaction_New(data, (size_t)len);
+  return (jlong)(uintptr_t)BtcK_Transaction_New(data, (size_t)len, NULL);
 }
 
 void Java_Transaction_close(JNIEnv* env, jobject self)

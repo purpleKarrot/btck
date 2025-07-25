@@ -37,7 +37,7 @@ JNIEXPORT jlong JNICALL Java_TransactionOutput_construct(
   struct BtcK_ScriptPubkey* script_pubkey =
     get_scriptpubkey_ptr(env, scriptPubkeyObj);
   struct BtcK_TransactionOutput* ptr =
-    BtcK_TransactionOutput_New((int64_t)amount, script_pubkey);
+    BtcK_TransactionOutput_New((int64_t)amount, script_pubkey, NULL);
   return (jlong)(uintptr_t)ptr;
 }
 
@@ -81,7 +81,8 @@ Java_TransactionOutput_getScriptPubkey(JNIEnv* env, jobject self)
     return NULL;
   }
 
-  struct BtcK_ScriptPubkey* spk = BtcK_TransactionOutput_GetScriptPubkey(ptr);
+  struct BtcK_ScriptPubkey* spk =
+    BtcK_TransactionOutput_GetScriptPubkey(ptr, NULL);
   if (!spk) {
     return NULL;
   }

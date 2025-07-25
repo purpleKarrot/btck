@@ -5,6 +5,9 @@
 #pragma once
 
 #include "util/ref_counted.hpp"
+#include "validation.h"
 
 struct BtcK_Chain : util::RefCounted<BtcK_Chain>
-{};
+{
+  ChainstateManager chainstate_manager;
+};

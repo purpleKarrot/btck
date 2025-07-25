@@ -8,8 +8,10 @@
 #include <functional>
 #include <iterator>
 #include <memory>
+#include <new>
 #include <optional>
 #include <span>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 
@@ -296,6 +298,57 @@ inline auto as_bytes(void const* data, std::size_t len)
   return std::span{reinterpret_cast<std::byte const*>(data), len};
 }
 
+template <typename Smart>
+class out_ptr
+{
+public:
+  using element_type = typename Smart::element_type;
+
+  explicit out_ptr(Smart& smart)
+    : smart_(smart)
+  {}
+
+  ~out_ptr() { smart_.reset(raw_); }
+
+  operator element_type**() { return &raw_; }
+
+private:
+  Smart& smart_;
+  element_type* raw_ = nullptr;
+};
+
+struct error_deleter
+{
+  void operator()(BtcK_Error* error) const { BtcK_Error_Free(error); }
+};
+
+struct error : std::unique_ptr<BtcK_Error, error_deleter>
+{
+  [[nodiscard]] auto code() const { return BtcK_Error_Code(get()); }
+  [[nodiscard]] auto domain() const { return BtcK_Error_Domain(get()); }
+  [[nodiscard]] auto message() const { return BtcK_Error_Message(get()); }
+};
+
+[[noreturn]] inline void translate_error(error const& err)
+{
+  using namespace std::literals;
+  if (err.domain() == "Memory"sv) {
+    throw std::bad_alloc();
+  }
+  throw std::runtime_error{err.message()};
+}
+
+template <typename Function, typename... Args>
+auto invoke(Function function, Args... args)
+{
+  auto err = error{};
+  auto const result = function(args..., out_ptr{err});
+  if (err != nullptr) {
+    translate_error(err);
+  }
+  return result;
+}
+
 }  // namespace btck::detail
 
 template <typename Range>
@@ -322,7 +375,10 @@ public:
   using base::base;
 
   ScriptPubkey(std::span<std::byte const> raw)
-    : base{BtcK_ScriptPubkey_New(raw.data(), raw.size()), detail::owned}
+    : base{
+        detail::invoke(BtcK_ScriptPubkey_New, raw.data(), raw.size()),
+        detail::owned
+      }
   {}
 
 private:
@@ -351,7 +407,9 @@ public:
 
   TransactionOutput(std::int64_t amount, ScriptPubkey script_pubkey)
     : base{
-        BtcK_TransactionOutput_New(amount, detail::get_impl(script_pubkey)),
+        detail::invoke(
+          BtcK_TransactionOutput_New, amount, detail::get_impl(script_pubkey)
+        ),
         detail::owned
       }
   {}
@@ -364,7 +422,8 @@ public:
   [[nodiscard]] auto script_pubkey() const -> ScriptPubkey
   {
     return {
-      BtcK_TransactionOutput_GetScriptPubkey(this->impl()), detail::owned
+      detail::invoke(BtcK_TransactionOutput_GetScriptPubkey, this->impl()),
+      detail::owned
     };
   }
 };
@@ -380,7 +439,10 @@ public:
   using base::base;
 
   Transaction(std::span<std::byte const> raw)
-    : base{BtcK_Transaction_New(raw.data(), raw.size()), detail::owned}
+    : base{
+        detail::invoke(BtcK_Transaction_New, raw.data(), raw.size()),
+        detail::owned
+      }
   {}
 
   [[nodiscard]] auto size() const -> std::size_t
@@ -464,7 +526,9 @@ public:
   using base::base;
 
   Block(std::span<std::byte const> raw)
-    : base{BtcK_Block_New(raw.data(), raw.size()), detail::owned}
+    : base{
+        detail::invoke(BtcK_Block_New, raw.data(), raw.size()), detail::owned
+      }
   {}
 
   [[nodiscard]] auto hash() const -> BlockHash
@@ -518,13 +582,13 @@ enum class ValidationResult : std::uint8_t
 using Validation =
   std::function<void(Block const&, ValidationState, ValidationResult)>;
 
-enum class ChainType : std::uint8_t
+enum class chain_type : BtcK_ChainType
 {
-  MAINNET = 0,
-  TESTNET,
-  TESTNET_4,
-  SIGNET,
-  REGTEST,
+  mainnet = BtcK_ChainType_MAINNET,
+  testnet = BtcK_ChainType_TESTNET,
+  testnet_4 = BtcK_ChainType_TESTNET_4,
+  signet = BtcK_ChainType_SIGNET,
+  regtest = BtcK_ChainType_REGTEST,
 };
 
 using Log = std::function<void(std::string_view)>;
@@ -565,7 +629,7 @@ public:
   struct KwArgs
   {
     KwArgs();
-    auto chain_type(ChainType arg) && -> KwArgs;
+    auto chain_type(chain_type arg) && -> KwArgs;
     auto validation(Validation arg) && -> KwArgs;
 
     template <typename T>

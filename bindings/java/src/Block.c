@@ -29,7 +29,7 @@ jlong Java_Block_construct(JNIEnv* env, jclass clazz, jobject buffer)
     return 0;
   }
 
-  return (jlong)(uintptr_t)BtcK_Block_New(data, (size_t)len);
+  return (jlong)(uintptr_t)BtcK_Block_New(data, (size_t)len, NULL);
 }
 
 void Java_Block_close(JNIEnv* env, jobject self)

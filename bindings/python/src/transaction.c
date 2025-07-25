@@ -64,7 +64,7 @@ static PyObject* new(
     return NULL;
   }
 
-  return Transaction_New(BtcK_Transaction_New(buffer.buf, buffer.len));
+  return Transaction_New(BtcK_Transaction_New(buffer.buf, buffer.len, NULL));
 }
 
 static Py_ssize_t length(struct Self const* self)

@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <stdexcept>
 #include <vector>
 
 #include <streams.h>
@@ -16,11 +17,13 @@
 #include <btck/btck.h>
 #include <primitives/transaction.h>
 
+#include "node/blockstorage.h"
 #include "primitives/block.h"
 #include "serialize.h"
 #include "span.h"
 #include "transaction.hpp"
 #include "uint256.h"
+#include "util/error.hpp"
 
 BtcK_Block::BtcK_Block(std::span<std::byte const> raw)
 {
@@ -28,13 +31,23 @@ BtcK_Block::BtcK_Block(std::span<std::byte const> raw)
   stream >> TX_WITH_WITNESS(block);
 }
 
+BtcK_Block::BtcK_Block(CBlockIndex const& bi, node::BlockManager const& bm)
+{
+  if (!bm.ReadBlock(this->block, bi)) {
+    throw std::runtime_error("Failed to read block.");
+  }
+}
+
 extern "C" {
 
-auto BtcK_Block_New(void const* raw, std::size_t len) -> BtcK_Block*
+auto BtcK_Block_New(void const* raw, std::size_t len, struct BtcK_Error** err)
+  -> BtcK_Block*
 {
-  return BtcK_Block::New(
-    std::span{reinterpret_cast<std::byte const*>(raw), len}
-  );
+  return util::WrapFn(err, [=] {
+    return new BtcK_Block{
+      std::span{reinterpret_cast<std::byte const*>(raw), len}
+    };
+  });
 }
 
 auto BtcK_Block_Retain(BtcK_Block* self) -> BtcK_Block*

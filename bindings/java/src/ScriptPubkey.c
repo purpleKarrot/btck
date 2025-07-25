@@ -22,7 +22,8 @@ Java_ScriptPubkey_construct(JNIEnv* env, jclass clazz, jbyteArray raw)
 
   jsize len = (*env)->GetArrayLength(env, raw);
   jbyte* bytes = (*env)->GetByteArrayElements(env, raw, NULL);
-  struct BtcK_ScriptPubkey* ptr = BtcK_ScriptPubkey_New(bytes, (size_t)len);
+  struct BtcK_ScriptPubkey* ptr =
+    BtcK_ScriptPubkey_New(bytes, (size_t)len, NULL);
 
   (*env)->ReleaseByteArrayElements(env, raw, bytes, JNI_ABORT);
   return (jlong)(uintptr_t)ptr;

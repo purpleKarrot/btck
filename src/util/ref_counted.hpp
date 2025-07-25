@@ -15,13 +15,7 @@ public:
   template <typename... Args>
   static auto New(Args&&... args) -> T*
   {
-    try {
-      return new T{std::forward<Args>(args)...};
-    }
-    catch (...) {
-      // TODO: Add error handling here
-      return nullptr;
-    }
+    return new T{std::forward<Args>(args)...};
   }
 
   auto Retain() -> T*

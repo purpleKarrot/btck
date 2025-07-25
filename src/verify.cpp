@@ -40,6 +40,7 @@ enum kernel_ScriptFlags
     kernel_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY |
     kernel_SCRIPT_FLAGS_VERIFY_WITNESS | kernel_SCRIPT_FLAGS_VERIFY_TAPROOT
 };
+
 enum kernel_ScriptVerifyStatus
 {
   kernel_SCRIPT_VERIFY_OK = 0,

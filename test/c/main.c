@@ -36,8 +36,12 @@ static void test_transaction(void** state)
     0x01, 0x9e, 0x75, 0x6c, 0x88, 0xac, 0x6a, 0xcb, 0x07, 0x00,
   };
 
+  struct BtcK_Error* error = NULL;
   struct BtcK_Transaction* transaction =
-    BtcK_Transaction_New(data, sizeof(data));
+    BtcK_Transaction_New(data, sizeof(data), &error);
+  if (error != NULL) {
+    BtcK_Error_Free(error);
+  }
 
   assert_int_equal(BtcK_Transaction_GetSize(transaction), 2);
 

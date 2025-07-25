@@ -5,10 +5,15 @@
 #include "chain.hpp"
 
 #include <cstddef>
+#include <span>
 
 #include <btck/btck.h>
 
-struct BtcK_Block;
+#include "block.hpp"
+#include "chain.h"
+#include "node/blockstorage.h"
+#include "span.h"
+#include "uint256.h"
 
 //   // poor man's cpp support for named arguments
 //   struct KwArgs
@@ -41,22 +46,25 @@ void BtcK_Chain_Release(BtcK_Chain* self)
   self->Release();
 }
 
-auto BtcK_Chain_GetSize(BtcK_Chain const* /*self*/) -> std::size_t
+auto BtcK_Chain_GetSize(BtcK_Chain const* self) -> std::size_t
 {
-  return 0;
+  return self->chainstate_manager.ActiveChain().Height();
 }
 
-auto BtcK_Chain_At(BtcK_Chain const* /*self*/, std::size_t /*idx*/)
-  -> BtcK_Block*
+auto BtcK_Chain_At(BtcK_Chain const* self, std::size_t idx) -> BtcK_Block*
 {
-  return nullptr;
+  CBlockIndex* bi = self->chainstate_manager.ActiveChain()[int(idx)];
+  return BtcK_Block::New(*bi, self->chainstate_manager.m_blockman);
 }
 
-auto BtcK_Chain_Find(
-  BtcK_Chain const* /*self*/, BtcK_BlockHash const* /*block_hash*/
-) -> std::ptrdiff_t
+auto BtcK_Chain_Find(BtcK_Chain const* self, BtcK_BlockHash const* block_hash)
+  -> std::ptrdiff_t
 {
-  return 0;
+  auto const hash = uint256{std::span{block_hash->data}};
+  auto const* bi = self->chainstate_manager.m_blockman.LookupBlockIndex(hash);
+  return (bi != nullptr && self->chainstate_manager.ActiveChain().Contains(bi))
+    ? bi->nHeight
+    : -1;
 }
 
 }  // extern "C"
