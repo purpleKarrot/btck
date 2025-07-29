@@ -7,6 +7,7 @@ find_package(GTest REQUIRED)
 add_executable(btck.test.cpp
   block.cpp
   transaction.cpp
+  verify.cpp
   )
 
 target_link_libraries(btck.test.cpp PRIVATE

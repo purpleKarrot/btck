@@ -130,6 +130,7 @@ target_sources(btck
     src/util/error.cpp
     src/block.cpp
     src/chain.cpp
+    src/script_flags.c
     src/script_pubkey.cpp
     src/transaction.cpp
     src/transaction_output.cpp

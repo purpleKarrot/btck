@@ -297,16 +297,22 @@ struct get_impl_
     return arg.ptr_;
   }
 
-  template <class T, T* (*Retain)(T const*), void (*Release)(T*)>
+  template <class T, T* (*Retain)(T*), void (*Release)(T*)>
   auto operator()(arc<T, Retain, Release> const& arg) const -> T const*
   {
     return arg.ptr_;
+  }
+
+  template <class T, T* (*Retain)(T*), void (*Release)(T*)>
+  auto operator()(arc<T, Retain, Release> const* arg) const -> T const* const*
+  {
+    return &arg->ptr_;
   }
 };
 
 constexpr auto const get_impl = get_impl_{};
 
-inline auto as_bytes(void const* data, std::size_t len)
+constexpr auto as_bytes(void const* data, std::size_t len)
 {
   return std::span{reinterpret_cast<std::byte const*>(data), len};
 }
@@ -362,6 +368,15 @@ auto invoke(Function function, Args... args)
   return result;
 }
 
+template <typename E>
+struct is_flag : std::false_type
+{};
+
+template <typename E>
+concept flag = is_flag<E>::value;
+
+struct verify_fn;
+
 }  // namespace btck::detail
 
 template <typename Range>
@@ -377,6 +392,55 @@ struct std::iterator_traits<btck::detail::range_iterator<Range>>
 };
 
 namespace btck {
+
+template <detail::flag E>
+constexpr auto operator|(E left, E right)
+{
+  using U = std::underlying_type_t<E>;
+  return static_cast<E>(static_cast<U>(left) | static_cast<U>(right));
+}
+
+template <detail::flag E>
+constexpr auto operator&(E left, E right)
+{
+  using U = std::underlying_type_t<E>;
+  return static_cast<E>(static_cast<U>(left) & static_cast<U>(right));
+}
+
+template <detail::flag E>
+constexpr auto operator^(E left, E right)
+{
+  using U = std::underlying_type_t<E>;
+  return static_cast<E>(static_cast<U>(left) ^ static_cast<U>(right));
+}
+
+template <detail::flag E>
+constexpr auto operator~(E e)
+{
+  using U = std::underlying_type_t<E>;
+  return static_cast<E>(~static_cast<U>(e));
+}
+
+template <detail::flag E>
+constexpr auto operator|=(E& left, E right) -> decltype(auto)
+{
+  left = left | right;
+  return left;
+}
+
+template <detail::flag E>
+constexpr auto operator&=(E& left, E right) -> decltype(auto)
+{
+  left = left & right;
+  return left;
+}
+
+template <detail::flag E>
+constexpr auto operator^=(E& left, E right) -> decltype(auto)
+{
+  left = left ^ right;
+  return left;
+}
 
 class ScriptPubkey
   : public detail::arc<
@@ -418,7 +482,7 @@ class TransactionOutput
 public:
   using base::base;
 
-  TransactionOutput(std::int64_t amount, ScriptPubkey script_pubkey)
+  TransactionOutput(std::int64_t amount, ScriptPubkey const& script_pubkey)
     : base{
         detail::invoke(
           BtcK_TransactionOutput_New, amount, detail::get_impl(script_pubkey)
@@ -492,14 +556,57 @@ enum class VerificationError : std::uint8_t
   SPENT_OUTPUTS_MISMATCH,
 };
 
-auto verify(
-  ScriptPubkey const& script_pubkey,
-  std::int64_t amount,
-  Transaction const& tx_to,
-  std::span<TransactionOutput const> spent_outputs,
-  unsigned int input_index,
-  unsigned int flags
-) -> std::optional<VerificationError>;
+enum class script_verify : BtcK_ScriptVerify
+{
+  none = BtcK_ScriptVerify_NONE,
+  p2sh = BtcK_ScriptVerify_P2SH,
+  dersig = BtcK_ScriptVerify_DERSIG,
+  nulldummy = BtcK_ScriptVerify_NULLDUMMY,
+  checklocktimeverify = BtcK_ScriptVerify_CHECKLOCKTIMEVERIFY,
+  checksequenceverify = BtcK_ScriptVerify_CHECKSEQUENCEVERIFY,
+  witness = BtcK_ScriptVerify_WITNESS,
+  taproot = BtcK_ScriptVerify_TAPROOT,
+  all = BtcK_ScriptVerify_ALL,
+};
+
+template <>
+struct detail::is_flag<script_verify> : std::true_type
+{};
+
+inline auto to_string(script_verify flags)
+{
+  auto const cflags = std::to_underlying(flags);
+  auto const len = BtcK_ScriptVerify_ToString(cflags, nullptr, 0);
+  if (len < 0) {
+    throw std::runtime_error("BtcK_ScriptVerify_ToString failed");
+  }
+  auto buf = std::string(static_cast<std::string::size_type>(len), '\0');
+  BtcK_ScriptVerify_ToString(cflags, buf.data(), len + 1);
+  return buf;
+}
+
+struct detail::verify_fn
+{
+  auto operator()(
+    ScriptPubkey const& script_pubkey,
+    std::int64_t amount,
+    Transaction const& tx_to,
+    std::span<TransactionOutput const> spent_outputs,
+    unsigned int input_index,
+    script_verify flags
+  ) const -> bool
+  {
+    return detail::invoke(
+      BtcK_Verify, detail::get_impl(script_pubkey), amount,
+      detail::get_impl(tx_to),
+      (spent_outputs.empty() ? nullptr
+                             : detail::get_impl(spent_outputs.data())),
+      spent_outputs.size(), input_index, std::to_underlying(flags)
+    );
+  }
+};
+
+constexpr auto const verify = detail::verify_fn{};
 
 class BlockHash
 {
@@ -513,9 +620,9 @@ public:
   }
 
 private:
-  friend auto operator==(BlockHash const& lhs, BlockHash const& rhs) -> bool
+  friend auto operator==(BlockHash const& left, BlockHash const& right) -> bool
   {
-    return std::ranges::equal(lhs.impl_.data, rhs.impl_.data);
+    return std::ranges::equal(left.impl_.data, right.impl_.data);
   }
 
   friend auto as_bytes(BlockHash const& self)

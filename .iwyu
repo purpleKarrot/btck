@@ -5,6 +5,7 @@
   { "include": ["<boolobject.h>", "private", "<Python.h>", "public"] },
   { "include": ["<bytesobject.h>", "private", "<Python.h>", "public"] },
   { "include": ["<descrobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<dictobject.h>", "private", "<Python.h>", "public"] },
   { "include": ["<exports.h>", "private", "<Python.h>", "public"] },
   { "include": ["<longobject.h>", "private", "<Python.h>", "public"] },
   { "include": ["<methodobject.h>", "private", "<Python.h>", "public"] },

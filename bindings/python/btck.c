@@ -9,6 +9,7 @@
 #include "src/block_hash.h"
 #include "src/chain.h"
 #include "src/script_pubkey.h"
+#include "src/script_verify.h"
 #include "src/transaction.h"
 #include "src/transaction_output.h"
 
@@ -70,6 +71,7 @@ static PyTypeObject* const types[] = {
   &Chain_Type,
   &Chain_BlocksSlice_Type,
   &ScriptPubkey_Type,
+  &ScriptVerify_Type,
   &Transaction_Type,
   &Transaction_OutputsSlice_Type,
   &TransactionOutput_Type,
@@ -82,6 +84,8 @@ static int exec(PyObject* module)
       return -1;
     }
   }
+
+  ScriptVerify_Init();
 
   return 0;
 }

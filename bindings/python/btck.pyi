@@ -15,6 +15,24 @@ class _Slice[T]:
 
 
 @typing.final
+class ScriptVerify:
+    ALL: typing.ClassVar[typing.Self]
+    NONE: typing.ClassVar[typing.Self]
+    P2SH: typing.ClassVar[typing.Self]
+    DERSIG: typing.ClassVar[typing.Self]
+    NULLDUMMY: typing.ClassVar[typing.Self]
+    CHECKLOCKTIMEVERIFY: typing.ClassVar[typing.Self]
+    CHECKSEQUENCEVERIFY: typing.ClassVar[typing.Self]
+    WITNESS: typing.ClassVar[typing.Self]
+    TAPROOT: typing.ClassVar[typing.Self]
+    def __eq__(self, other: typing.Any) -> bool: ...
+    def __ne__(self, other: typing.Any) -> bool: ...
+    def __or__(self, other: typing.Self) -> typing.Self: ...
+    def __and__(self, other: typing.Self) -> typing.Self: ...
+    def __xor__(self, other: typing.Self) -> typing.Self: ...
+    def __invert__(self) -> typing.Self: ...
+
+@typing.final
 class Block:
     def __init__(self, raw: bytes): ...
     hash: BlockHash

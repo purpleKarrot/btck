@@ -124,34 +124,47 @@ BTCK_API char const* BtcK_Transaction_ToString(
 
 /*****************************************************************************/
 
-// enum class VerificationError
-// {
-//   TX_INPUT_INDEX,
-//   INVALID_FLAGS,
-//   INVALID_FLAGS_COMBINATION,
-//   SPENT_OUTPUTS_REQUIRED,
-//   SPENT_OUTPUTS_MISMATCH,
-// };
+typedef uint32_t BtcK_ScriptVerify;
+
+#define BtcK_ScriptVerify_NONE ((BtcK_ScriptVerify)(0))
+
+#define BtcK_ScriptVerify_P2SH ((BtcK_ScriptVerify)(1U << 0))
+
+#define BtcK_ScriptVerify_DERSIG ((BtcK_ScriptVerify)(1U << 2))
+
+#define BtcK_ScriptVerify_NULLDUMMY ((BtcK_ScriptVerify)(1U << 4))
+
+#define BtcK_ScriptVerify_CHECKLOCKTIMEVERIFY ((BtcK_ScriptVerify)(1U << 9))
+
+#define BtcK_ScriptVerify_CHECKSEQUENCEVERIFY ((BtcK_ScriptVerify)(1U << 10))
+
+#define BtcK_ScriptVerify_WITNESS ((BtcK_ScriptVerify)(1U << 11))
+
+#define BtcK_ScriptVerify_TAPROOT ((BtcK_ScriptVerify)(1U << 17))
+
+#define BtcK_ScriptVerify_ALL                                                  \
+  ((BtcK_ScriptVerify)(BtcK_ScriptVerify_P2SH | BtcK_ScriptVerify_DERSIG |     \
+                       BtcK_ScriptVerify_NULLDUMMY |                           \
+                       BtcK_ScriptVerify_CHECKLOCKTIMEVERIFY |                 \
+                       BtcK_ScriptVerify_CHECKSEQUENCEVERIFY |                 \
+                       BtcK_ScriptVerify_WITNESS | BtcK_ScriptVerify_TAPROOT))
+
+BTCK_API int BtcK_ScriptVerify_ToString(
+  BtcK_ScriptVerify flags, char* buf, size_t len
+);
 
 BTCK_API bool BtcK_Verify(
   struct BtcK_ScriptPubkey const* script_pubkey,
   int64_t amount,
   struct BtcK_Transaction const* tx_to,
   struct BtcK_TransactionOutput const* const* spent_outputs,
-  int spent_outputs_len,
+  size_t spent_outputs_len,
   unsigned int input_index,
-  unsigned int flags,
-  int* status
+  BtcK_ScriptVerify flags,
+  struct BtcK_Error** err
 );
 
-// auto verify(
-//   ScriptPubkey const& script_pubkey,
-//   std::int64_t amount,
-//   Transaction const& tx_to,
-//   std::span<TransactionOutput const> spent_outputs,
-//   unsigned int input_index,
-//   unsigned int flags
-// ) -> std::optional<VerificationError>;
+/*****************************************************************************/
 
 BTCK_API void BtcK_BlockHash_Init(
   struct BtcK_BlockHash* self, void const* raw, size_t len
