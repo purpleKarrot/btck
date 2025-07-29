@@ -39,12 +39,17 @@ public:
     , idx_{idx}
   {}
 
-  auto operator*() -> decltype(auto) { return (*range_)[idx_]; }
-  auto operator*() const -> decltype(auto) { return (*range_)[idx_]; }
-
-  auto operator->()
+  template <typename Self>
+  auto operator*(this Self&& self) -> decltype(auto)
   {
-    decltype(auto) ref = **this;
+    auto const idx = self.idx_;
+    return (*std::forward<Self>(self).range_)[idx];
+  }
+
+  template <typename Self>
+  auto operator->(this Self&& self)
+  {
+    decltype(auto) ref = *std::forward<Self>(self);
     if constexpr (std::is_reference_v<decltype(ref)>) {
       return std::addressof(ref);
     }
@@ -53,21 +58,10 @@ public:
     }
   }
 
-  auto operator->() const
+  template <typename Self>
+  auto operator[](this Self&& self, std::size_t n) -> decltype(auto)
   {
-    decltype(auto) ref = **this;
-    if constexpr (std::is_reference_v<decltype(ref)>) {
-      return std::addressof(ref);
-    }
-    else {
-      return arrow_proxy{std::move(ref)};
-    }
-  }
-
-  auto operator[](std::size_t n) -> decltype(auto) { return *(*this + n); }
-  auto operator[](std::size_t n) const -> decltype(auto)
-  {
-    return *(*this + n);
+    return *(std::forward<Self>(self) + n);
   }
 
   auto operator++() -> range_iterator&
@@ -158,56 +152,75 @@ public:
   using reverse_iterator = std::reverse_iterator<iterator>;
   using reverse_const_iterator = std::reverse_iterator<const_iterator>;
 
-  [[nodiscard]] auto empty() const -> bool { return self().size() == 0; }
-
-  [[nodiscard]] auto begin() -> iterator { return {&self(), 0}; }
-  [[nodiscard]] auto end() -> iterator { return {&self(), self().size()}; }
-
-  [[nodiscard]] auto begin() const -> const_iterator { return {&self(), 0}; }
-  [[nodiscard]] auto end() const -> const_iterator
+  template <typename Self>
+  [[nodiscard]] auto empty(this Self const& self) -> bool
   {
-    return {&self(), self().size()};
-  }
-  [[nodiscard]] auto cbegin() const -> const_iterator { return {&self(), 0}; }
-  [[nodiscard]] auto cend() const -> const_iterator
-  {
-    return {&self(), self().size()};
+    return self.size() == 0;
   }
 
-  [[nodiscard]] auto rbegin() -> reverse_iterator { return end(); }
-  [[nodiscard]] auto rend() -> reverse_iterator { return begin(); }
+  template <typename Self>
+  [[nodiscard]] auto begin(this Self& self)
+  {
+    return range_iterator<Self>{&self, 0};
+  }
 
-  [[nodiscard]] auto rbegin() const -> reverse_const_iterator { return end(); }
-  [[nodiscard]] auto rend() const -> reverse_const_iterator { return begin(); }
-  [[nodiscard]] auto crbegin() const -> reverse_const_iterator { return end(); }
-  [[nodiscard]] auto crend() const -> reverse_const_iterator { return begin(); }
+  template <typename Self>
+  [[nodiscard]] auto end(this Self& self)
+  {
+    return range_iterator<Self>{&self, self.size()};
+  }
 
-  [[nodiscard]] auto front() -> decltype(auto)
+  template <typename Self>
+  [[nodiscard]] auto cbegin(this Self const& self)
   {
-    return self()[std::size_t(0)];
+    return self.begin();
   }
-  [[nodiscard]] auto front() const -> decltype(auto)
+
+  template <typename Self>
+  [[nodiscard]] auto cend(this Self const& self)
   {
-    return self()[std::size_t(0)];
+    return self.end();
   }
-  [[nodiscard]] auto back() -> decltype(auto)
+
+  template <typename Self>
+  [[nodiscard]] auto rbegin(this Self& self)
   {
-    return self()[self().size() - 1];
+    return std::reverse_iterator{self.end()};
   }
-  [[nodiscard]] auto back() const -> decltype(auto)
+
+  template <typename Self>
+  [[nodiscard]] auto rend(this Self& self)
   {
-    return self()[self().size() - 1];
+    return std::reverse_iterator{self.begin()};
+  }
+
+  template <typename Self>
+  [[nodiscard]] auto crbegin(this Self const& self)
+  {
+    return self.rbegin();
+  }
+
+  template <typename Self>
+  [[nodiscard]] auto crend(this Self const& self)
+  {
+    return self.rend();
+  }
+
+  template <typename Self>
+  [[nodiscard]] auto front(this Self& self) -> decltype(auto)
+  {
+    return self[std::size_t(0)];
+  }
+
+  template <typename Self>
+  [[nodiscard]] auto back(this Self& self) -> decltype(auto)
+  {
+    return self[self.size() - 1];
   }
 
 private:
   range() = default;
   friend Derived;
-
-  [[nodiscard]] auto self() -> Derived& { return static_cast<Derived&>(*this); }
-  [[nodiscard]] auto self() const -> Derived const&
-  {
-    return static_cast<Derived const&>(*this);
-  }
 };
 
 struct owned_tag
@@ -343,7 +356,7 @@ auto invoke(Function function, Args... args)
 {
   auto err = error{};
   auto const result = function(args..., out_ptr{err});
-  if (err != nullptr) {
+  if (err != nullptr) [[unlikely]] {
     translate_error(err);
   }
   return result;

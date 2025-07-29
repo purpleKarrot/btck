@@ -164,7 +164,7 @@ target_sources(btck-cpp
     include/btck/btck.hpp
   )
 
-target_compile_features(btck-cpp INTERFACE cxx_std_20)
+target_compile_features(btck-cpp INTERFACE cxx_std_23)
 target_link_libraries(btck-cpp INTERFACE BtcK::btck)
 
 install(TARGETS btck btck-cpp EXPORT btck-targets

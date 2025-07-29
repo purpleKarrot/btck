@@ -10,6 +10,8 @@
 
 #include <btck/btck.h>
 
+#include "_error.h"
+
 struct BtcK_ScriptPubkey;
 
 struct Self
@@ -58,7 +60,14 @@ static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
     return NULL;
   }
 
-  return ScriptPubkey_New(BtcK_ScriptPubkey_New(buffer.buf, buffer.len, NULL));
+  struct BtcK_Error* error = NULL;
+  struct BtcK_ScriptPubkey* impl =
+    BtcK_ScriptPubkey_New(buffer.buf, buffer.len, &error);
+  if (error != NULL) {
+    return SetError(error);
+  }
+
+  return ScriptPubkey_New(impl);
 }
 
 static PyObject* richcmp(struct Self const* self, PyObject* other, int op)

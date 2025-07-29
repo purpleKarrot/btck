@@ -6,6 +6,7 @@ find_package(Python3 3.12 REQUIRED COMPONENTS Development.Module)
 
 python3_add_library(btck-python WITH_SOABI
   btck.c
+  src/_error.c
   src/_slice.c
   src/block.c
   src/block_hash.c
