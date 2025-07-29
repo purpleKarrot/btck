@@ -19,16 +19,18 @@ struct Self
 
 static void dealloc(struct Self* self);
 static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
-static Py_ssize_t length(struct Self const* self);
-static PyObject* item(struct Self* self, Py_ssize_t idx);
+static PyObject* get_blocks_slice(struct Self const* self, void* closure);
 
-static PySequenceMethods as_sequence = {
-  .sq_length = (lenfunc)length,
-  .sq_item = (ssizeargfunc)item,
+static Py_ssize_t num_blocks(struct Self const* self);
+static PyObject* get_block(struct Self* self, Py_ssize_t idx);
+
+static PySequenceMethods blocks_as_sequence = {
+  .sq_length = (lenfunc)num_blocks,
+  .sq_item = (ssizeargfunc)get_block,
 };
 
-static PyMappingMethods as_mapping = {
-  .mp_length = (lenfunc)length,
+static PyMappingMethods blocks_as_mapping = {
+  .mp_length = (lenfunc)num_blocks,
   .mp_subscript = Slice_subscript,
 };
 
@@ -40,8 +42,20 @@ PyTypeObject Chain_Type = {
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
-  .tp_as_sequence = &as_sequence,
-  .tp_as_mapping = &as_mapping,
+  .tp_getset = (PyGetSetDef[]){
+    {"blocks", (getter)get_blocks_slice, NULL, "", NULL},
+    {},
+  },
+};
+
+PyTypeObject Chain_BlocksSlice_Type = {
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name = "btck._Slice[Block]",
+  .tp_basicsize = sizeof(struct Self),
+  .tp_dealloc = (destructor)dealloc,
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_as_sequence = &blocks_as_sequence,
+  .tp_as_mapping = &blocks_as_mapping,
 };
 
 static void dealloc(struct Self* self)
@@ -89,18 +103,30 @@ static PyObject* new(
 //         m_context.m_context.get(), m_chainman, block.m_block.get(), new_block);
 //   }
 
-static Py_ssize_t length(struct Self const* self)
+static PyObject* get_blocks_slice(
+  struct Self const* self, void* Py_UNUSED(closure)
+)
 {
-  return (Py_ssize_t)BtcK_Chain_GetSize(self->impl);
+  struct Self* slice = PyObject_New(struct Self, &Chain_BlocksSlice_Type);
+  if (slice == NULL) {
+    return NULL;
+  }
+  slice->impl = BtcK_Chain_Retain(self->impl);
+  return (PyObject*)slice;
 }
 
-static PyObject* item(struct Self* self, Py_ssize_t idx)
+static Py_ssize_t num_blocks(struct Self const* self)
 {
-  if (idx < 0 || idx >= length(self)) {
+  return (Py_ssize_t)BtcK_Chain_NumBlocks(self->impl);
+}
+
+static PyObject* get_block(struct Self* self, Py_ssize_t idx)
+{
+  if (idx < 0 || idx >= num_blocks(self)) {
     PyErr_SetString(PyExc_IndexError, "index out of range");
     return NULL;
   }
-  return Block_New(BtcK_Chain_At(self->impl, idx));
+  return Block_New(BtcK_Chain_GetBlock(self->impl, idx));
 }
 
 //   BlockIndex GetBlockIndexByHash(kernel_BlockHash * block_hash) const noexcept

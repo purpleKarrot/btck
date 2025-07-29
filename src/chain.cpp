@@ -46,12 +46,12 @@ void BtcK_Chain_Release(BtcK_Chain* self)
   self->Release();
 }
 
-auto BtcK_Chain_GetSize(BtcK_Chain const* self) -> std::size_t
+auto BtcK_Chain_NumBlocks(BtcK_Chain const* self) -> std::size_t
 {
   return self->chainstate_manager.ActiveChain().Height();
 }
 
-auto BtcK_Chain_At(BtcK_Chain const* self, std::size_t idx) -> BtcK_Block*
+auto BtcK_Chain_GetBlock(BtcK_Chain const* self, std::size_t idx) -> BtcK_Block*
 {
   CBlockIndex* bi = self->chainstate_manager.ActiveChain()[int(idx)];
   return BtcK_Block::New(*bi, self->chainstate_manager.m_blockman);

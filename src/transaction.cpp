@@ -66,12 +66,12 @@ void BtcK_Transaction_Release(BtcK_Transaction* self)
   self->Release();
 }
 
-auto BtcK_Transaction_GetSize(BtcK_Transaction const* self) -> std::size_t
+auto BtcK_Transaction_NumOutputs(BtcK_Transaction const* self) -> std::size_t
 {
   return self->transaction->vout.size();
 }
 
-auto BtcK_Transaction_At(BtcK_Transaction const* self, std::size_t idx)
+auto BtcK_Transaction_GetOutput(BtcK_Transaction const* self, std::size_t idx)
   -> BtcK_TransactionOutput*
 {
   return BtcK_TransactionOutput::New(self->transaction->vout[idx]);

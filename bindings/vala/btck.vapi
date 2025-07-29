@@ -55,16 +55,16 @@ public class TransactionOutput {
 )]
 public class Transaction {
     [CCode (cname = "BtcK_Transaction_New")]
-    public Transaction(uchar[] raw) throws Exception;
+    public Transaction(uchar[] raw, out Error error);
 
     [CCode (cname = "BtcK_Transaction_ToString")]
     public string to_string ();
 
-    [CCode (cname = "BtcK_Transaction_At")]
+    [CCode (cname = "BtcK_Transaction_GetOutput")]
     public TransactionOutput get (size_t index);
 
     public size_t size {
-        [CCode (cname = "BtcK_Transaction_GetSize")]
+        [CCode (cname = "BtcK_Transaction_NumOutputs")]
         get;
     }
 }
@@ -84,13 +84,13 @@ public struct BlockHash {
 )]
 public class Block {
     [CCode (cname = "BtcK_Block_New")]
-    public Block (uchar[] raw) throws Exception;
+    public Block (uchar[] raw, out Error error);
 
-    [CCode (cname = "BtcK_Block_At")]
+    [CCode (cname = "BtcK_Block_GetTransaction")]
     public Transaction get (size_t index);
 
     public size_t size {
-        [CCode (cname = "BtcK_Block_GetSize")]
+        [CCode (cname = "BtcK_Block_NumTransactions")]
         get;
     }
 

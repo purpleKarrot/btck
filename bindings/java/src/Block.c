@@ -52,7 +52,7 @@ jint Java_Block_size(JNIEnv* env, jobject self)
     return 0;
   }
 
-  return (jint)BtcK_Block_GetSize(ptr);
+  return (jint)BtcK_Block_NumTransactions(ptr);
 }
 
 jobject Java_Block_get(JNIEnv* env, jobject self, jint idx)
@@ -64,7 +64,7 @@ jobject Java_Block_get(JNIEnv* env, jobject self, jint idx)
     return NULL;
   }
 
-  struct BtcK_Transaction* tx = BtcK_Block_At(ptr, (size_t)idx);
+  struct BtcK_Transaction* tx = BtcK_Block_GetTransaction(ptr, (size_t)idx);
   if (tx == NULL) {
     return NULL;
   }

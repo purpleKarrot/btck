@@ -44,7 +44,7 @@ JNIEXPORT jint JNICALL Java_Chain_size(JNIEnv* env, jobject self)
     return 0;
   }
 
-  return (jint)BtcK_Chain_GetSize(ptr);
+  return (jint)BtcK_Chain_NumBlocks(ptr);
 }
 
 JNIEXPORT jobject JNICALL Java_Chain_get(JNIEnv* env, jobject self, jint idx)
@@ -56,7 +56,7 @@ JNIEXPORT jobject JNICALL Java_Chain_get(JNIEnv* env, jobject self, jint idx)
     return NULL;
   }
 
-  struct BtcK_Block* blk = BtcK_Chain_At(ptr, (size_t)idx);
+  struct BtcK_Block* blk = BtcK_Chain_GetBlock(ptr, (size_t)idx);
   if (blk == NULL) {
     return NULL;
   }

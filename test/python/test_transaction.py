@@ -24,9 +24,9 @@ def test_transaction():
 
     tx = btck.Transaction(data)
 
-    assert len(tx) == 2
-    assert tx[0].amount == 20737411
-    assert tx[1].amount == 42130042
+    assert len(tx.outputs) == 2
+    assert tx.outputs[0].amount == 20737411
+    assert tx.outputs[1].amount == 42130042
 
-    for output in tx:
+    for output in tx.outputs:
         print(output.amount)

@@ -107,9 +107,10 @@ BTCK_API struct BtcK_Transaction* BtcK_Transaction_Retain(
 
 BTCK_API void BtcK_Transaction_Release(struct BtcK_Transaction* self);
 
-BTCK_API size_t BtcK_Transaction_GetSize(struct BtcK_Transaction const* self);
+BTCK_API size_t
+BtcK_Transaction_NumOutputs(struct BtcK_Transaction const* self);
 
-BTCK_API struct BtcK_TransactionOutput* BtcK_Transaction_At(
+BTCK_API struct BtcK_TransactionOutput* BtcK_Transaction_GetOutput(
   struct BtcK_Transaction const* self, size_t idx
 );
 
@@ -172,9 +173,9 @@ BTCK_API void BtcK_Block_GetHash(
   struct BtcK_Block const* self, struct BtcK_BlockHash* out
 );
 
-BTCK_API size_t BtcK_Block_GetSize(struct BtcK_Block const* self);
+BTCK_API size_t BtcK_Block_NumTransactions(struct BtcK_Block const* self);
 
-BTCK_API struct BtcK_Transaction* BtcK_Block_At(
+BTCK_API struct BtcK_Transaction* BtcK_Block_GetTransaction(
   struct BtcK_Block const* self, size_t idx
 );
 
@@ -280,11 +281,11 @@ typedef uint8_t BtcK_ChainType;
 BTCK_API struct BtcK_Chain* BtcK_Chain_Retain(struct BtcK_Chain* self);
 BTCK_API void BtcK_Chain_Release(struct BtcK_Chain* self);
 
-BTCK_API size_t BtcK_Chain_GetSize(struct BtcK_Chain const* self);
-BTCK_API struct BtcK_Block* BtcK_Chain_At(
+BTCK_API size_t BtcK_Chain_NumBlocks(struct BtcK_Chain const* self);
+BTCK_API struct BtcK_Block* BtcK_Chain_GetBlock(
   struct BtcK_Chain const* self, size_t idx
 );
-BTCK_API ptrdiff_t BtcK_Chain_Find(
+BTCK_API ptrdiff_t BtcK_Chain_FindBlock(
   struct BtcK_Chain const* self, struct BtcK_BlockHash const* block_hash
 );
 

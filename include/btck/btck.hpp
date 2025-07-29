@@ -460,11 +460,11 @@ public:
 
   [[nodiscard]] auto size() const -> std::size_t
   {
-    return BtcK_Transaction_GetSize(this->impl());
+    return BtcK_Transaction_NumOutputs(this->impl());
   }
   [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
   {
-    return {BtcK_Transaction_At(this->impl(), idx), detail::owned};
+    return {BtcK_Transaction_GetOutput(this->impl(), idx), detail::owned};
   }
 
 private:
@@ -553,11 +553,11 @@ public:
 
   [[nodiscard]] auto size() const -> std::size_t
   {
-    return BtcK_Block_GetSize(this->impl());
+    return BtcK_Block_NumTransactions(this->impl());
   }
   [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
   {
-    return {BtcK_Block_At(this->impl(), idx), detail::owned};
+    return {BtcK_Block_GetTransaction(this->impl(), idx), detail::owned};
   }
 
 private:
@@ -664,17 +664,17 @@ public:
   using value_type = Block;
   [[nodiscard]] auto size() const -> std::size_t
   {
-    return BtcK_Chain_GetSize(this->impl_.get());
+    return BtcK_Chain_NumBlocks(this->impl_.get());
   }
   [[nodiscard]] auto operator[](std::size_t height) const -> value_type
   {
-    return {BtcK_Chain_At(this->impl_.get(), height), detail::owned};
+    return {BtcK_Chain_GetBlock(this->impl_.get(), height), detail::owned};
   }
 
   [[nodiscard]] auto find(BlockHash const& block_hash) const -> iterator
   {
     std::ptrdiff_t const idx =
-      BtcK_Chain_Find(this->impl_.get(), &block_hash.impl_);
+      BtcK_Chain_FindBlock(this->impl_.get(), &block_hash.impl_);
     return (idx == -1) ? this->end() : this->begin() + idx;
   }
 

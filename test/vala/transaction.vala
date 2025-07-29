@@ -21,7 +21,8 @@ public void test_transaction () {
         0x07, 0x00,
     };
 
-    var tx = new BtcK.Transaction(data);
+    BtcK.Error error;
+    var tx = new BtcK.Transaction(data, out error);
 
     assert(tx.size == 2);
 

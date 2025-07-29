@@ -66,12 +66,12 @@ void BtcK_Block_GetHash(BtcK_Block const* self, BtcK_BlockHash* out)
   BtcK_BlockHash_Init(out, hash.data(), decltype(hash)::size());
 }
 
-auto BtcK_Block_GetSize(BtcK_Block const* self) -> std::size_t
+auto BtcK_Block_NumTransactions(BtcK_Block const* self) -> std::size_t
 {
   return self->block.vtx.size();
 }
 
-auto BtcK_Block_At(BtcK_Block const* self, std::size_t idx) -> BtcK_Transaction*
+auto BtcK_Block_GetTransaction(BtcK_Block const* self, std::size_t idx) -> BtcK_Transaction*
 {
   return BtcK_Transaction::New(self->block.vtx[idx]);
 }

@@ -30,11 +30,11 @@ func newTransactionFinalized(ptr *C.struct_BtcK_Transaction) *Transaction {
 }
 
 func (t *Transaction) Len() int {
-	return int(C.BtcK_Transaction_GetSize(t.ptr))
+	return int(C.BtcK_Transaction_NumOutputs(t.ptr))
 }
 
 func (t *Transaction) At(idx int) *TransactionOutput {
-	ptr := C.BtcK_Transaction_At(t.ptr, C.size_t(idx))
+	ptr := C.BtcK_Transaction_GetOutput(t.ptr, C.size_t(idx))
 	return newTransactionOutputFinalized(ptr)
 }
 
