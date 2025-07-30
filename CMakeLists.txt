@@ -133,9 +133,9 @@ target_sources(btck
     src/script_pubkey.cpp
     src/transaction.cpp
     src/transaction_output.cpp
-    src/verification_error.cpp
-    src/verify.cpp
+    src/verification_error.c
     src/verification_flags.c
+    src/verify.cpp
   )
 
 target_compile_features(btck PRIVATE cxx_std_23)

@@ -9,7 +9,6 @@
 #include <iterator>
 #include <memory>
 #include <new>
-#include <optional>
 #include <span>
 #include <stdexcept>
 #include <string_view>
@@ -17,39 +16,13 @@
 
 #include <btck/btck.h>
 
-namespace btck {
-
-enum class verification_error : BtcK_VerificationError
-{
-  tx_input_index = BtcK_VerificationError_TX_INPUT_INDEX,
-  invalid_flags = BtcK_VerificationError_INVALID_FLAGS,
-  invalid_flags_combination = BtcK_VerificationError_INVALID_FLAGS_COMBINATION,
-  spent_outputs_required = BtcK_VerificationError_SPENT_OUTPUTS_REQUIRED,
-  spent_outputs_mismatch = BtcK_VerificationError_SPENT_OUTPUTS_MISMATCH,
-};
-
-auto make_error_code(verification_error err) -> std::error_code;
-
-enum class verification_flags : BtcK_VerificationFlags
-{
-  none = BtcK_VerificationFlags_NONE,
-  p2sh = BtcK_VerificationFlags_P2SH,
-  dersig = BtcK_VerificationFlags_DERSIG,
-  nulldummy = BtcK_VerificationFlags_NULLDUMMY,
-  checklocktimeverify = BtcK_VerificationFlags_CHECKLOCKTIMEVERIFY,
-  checksequenceverify = BtcK_VerificationFlags_CHECKSEQUENCEVERIFY,
-  witness = BtcK_VerificationFlags_WITNESS,
-  taproot = BtcK_VerificationFlags_TAPROOT,
-  all = BtcK_VerificationFlags_ALL,
-};
-
-}  // namespace btck
+/******************************************************************************/
+// MARK: Range Mixin
 
 namespace btck::detail {
 
 template <typename T>
-struct arrow_proxy
-{
+struct arrow_proxy {
   auto operator->() -> T* { return &r; }
   T r;
 };
@@ -142,10 +115,12 @@ private:
   {
     return i += n;
   }
+
   friend auto operator-(range_iterator i, std::ptrdiff_t n) -> range_iterator
   {
     return i -= n;
   }
+
   friend auto operator+(std::ptrdiff_t n, range_iterator i) -> range_iterator
   {
     return i += n;
@@ -251,8 +226,25 @@ private:
   friend Derived;
 };
 
-struct owned_tag
-{};
+}  // namespace btck::detail
+
+template <typename Range>
+struct std::iterator_traits<btck::detail::range_iterator<Range>> {
+  using value_type = typename Range::value_type;
+  using reference =
+    decltype(*std::declval<btck::detail::range_iterator<Range>>());
+  using pointer =
+    decltype(std::declval<btck::detail::range_iterator<Range>>().operator->());
+  using difference_type = std::ptrdiff_t;
+  using iterator_category = std::random_access_iterator_tag;
+};
+
+/******************************************************************************/
+// MARK: ARC Mixin
+
+namespace btck::detail {
+
+struct owned_tag {};
 
 constexpr auto const owned = owned_tag{};
 
@@ -317,8 +309,7 @@ private:
   friend struct get_impl_;
 };
 
-struct get_impl_
-{
+struct get_impl_ {
   template <class T, T* (*Retain)(T*), void (*Release)(T*)>
   auto operator()(arc<T, Retain, Release>& arg) const -> T*
   {
@@ -340,10 +331,12 @@ struct get_impl_
 
 constexpr auto const get_impl = get_impl_{};
 
-constexpr auto as_bytes(void const* data, std::size_t len)
-{
-  return std::span{reinterpret_cast<std::byte const*>(data), len};
-}
+}  // namespace btck::detail
+
+/******************************************************************************/
+// MARK: out_ptr
+
+namespace btck::detail {
 
 template <typename Smart>
 class out_ptr
@@ -364,13 +357,22 @@ private:
   element_type* raw_ = nullptr;
 };
 
-struct error_deleter
+}  // namespace btck::detail
+
+/******************************************************************************/
+
+namespace btck::detail {
+
+constexpr auto as_bytes(void const* data, std::size_t len)
 {
+  return std::span{reinterpret_cast<std::byte const*>(data), len};
+}
+
+struct error_deleter {
   void operator()(BtcK_Error* error) const { BtcK_Error_Free(error); }
 };
 
-struct error : std::unique_ptr<BtcK_Error, error_deleter>
-{
+struct error : std::unique_ptr<BtcK_Error, error_deleter> {
   [[nodiscard]] auto code() const { return BtcK_Error_Code(get()); }
   [[nodiscard]] auto domain() const { return BtcK_Error_Domain(get()); }
   [[nodiscard]] auto message() const { return BtcK_Error_Message(get()); }
@@ -396,38 +398,21 @@ auto invoke(Function function, Args... args)
   return result;
 }
 
+}  // namespace btck::detail
+
+/******************************************************************************/
+// MARK: Flag Operators
+
+namespace btck {
+namespace detail {
+
 template <typename E>
-struct is_flag_enum : std::false_type
-{};
+struct is_flag_enum : std::false_type {};
 
 template <typename E>
 concept flag_enum = is_flag_enum<E>::value;
 
-struct verify_fn;
-
-}  // namespace btck::detail
-
-template <typename Range>
-struct std::iterator_traits<btck::detail::range_iterator<Range>>
-{
-  using value_type = typename Range::value_type;
-  using reference =
-    decltype(*std::declval<btck::detail::range_iterator<Range>>());
-  using pointer =
-    decltype(std::declval<btck::detail::range_iterator<Range>>().operator->());
-  using difference_type = std::ptrdiff_t;
-  using iterator_category = std::random_access_iterator_tag;
-};
-
-template <>
-struct std::is_error_code_enum<btck::verification_error> : std::true_type
-{};
-
-template <>
-struct btck::detail::is_flag_enum<btck::verification_flags> : std::true_type
-{};
-
-namespace btck {
+}  // namespace detail
 
 template <detail::flag_enum E>
 constexpr auto operator|(E left, E right)
@@ -478,6 +463,86 @@ constexpr auto operator^=(E& left, E right) -> decltype(auto)
   return left;
 }
 
+}  // namespace btck
+
+/******************************************************************************/
+// MARK: VerificationError
+
+namespace btck {
+
+enum class verification_error : BtcK_VerificationError {
+  tx_input_index = BtcK_VerificationError_TX_INPUT_INDEX,
+  invalid_flags = BtcK_VerificationError_INVALID_FLAGS,
+  invalid_flags_combination = BtcK_VerificationError_INVALID_FLAGS_COMBINATION,
+  spent_outputs_required = BtcK_VerificationError_SPENT_OUTPUTS_REQUIRED,
+  spent_outputs_mismatch = BtcK_VerificationError_SPENT_OUTPUTS_MISMATCH,
+};
+
+namespace detail {
+
+inline struct : std::error_category {
+  [[nodiscard]] auto name() const noexcept -> char const* override
+  {
+    return "VerificationError";
+  }
+
+  [[nodiscard]] auto message(int ev) const -> std::string override
+  {
+    return BtcK_VerificationError_Message(ev);
+  }
+} const verification_error_category;
+
+}  // namespace detail
+
+inline auto make_error_code(verification_error err) -> std::error_code
+{
+  return {static_cast<int>(err), detail::verification_error_category};
+}
+
+}  // namespace btck
+
+template <>
+struct std::is_error_code_enum<btck::verification_error> : std::true_type {};
+
+/******************************************************************************/
+// MARK: VerificationFlags
+
+namespace btck {
+
+enum class verification_flags : BtcK_VerificationFlags {
+  none = BtcK_VerificationFlags_NONE,
+  p2sh = BtcK_VerificationFlags_P2SH,
+  dersig = BtcK_VerificationFlags_DERSIG,
+  nulldummy = BtcK_VerificationFlags_NULLDUMMY,
+  checklocktimeverify = BtcK_VerificationFlags_CHECKLOCKTIMEVERIFY,
+  checksequenceverify = BtcK_VerificationFlags_CHECKSEQUENCEVERIFY,
+  witness = BtcK_VerificationFlags_WITNESS,
+  taproot = BtcK_VerificationFlags_TAPROOT,
+  all = BtcK_VerificationFlags_ALL,
+};
+
+inline auto to_string(verification_flags flags)
+{
+  auto const cflags = std::to_underlying(flags);
+  auto const len = BtcK_VerificationFlags_ToString(cflags, nullptr, 0);
+  if (len < 0) {
+    throw std::runtime_error("BtcK_VerificationFlags_ToString failed");
+  }
+  auto buf = std::string(static_cast<std::string::size_type>(len), '\0');
+  BtcK_VerificationFlags_ToString(cflags, buf.data(), len + 1);
+  return buf;
+}
+
+}  // namespace btck
+
+template <>
+struct btck::detail::is_flag_enum<btck::verification_flags> : std::true_type {};
+
+/******************************************************************************/
+// MARK: ScriptPubkey
+
+namespace btck {
+
 class ScriptPubkey
   : public detail::arc<
       BtcK_ScriptPubkey,
@@ -508,6 +573,13 @@ private:
     return detail::as_bytes(data, len);
   }
 };
+
+}  // namespace btck
+
+/******************************************************************************/
+// MARK: TransactionOutput
+
+namespace btck {
 
 class TransactionOutput
   : public detail::arc<
@@ -540,6 +612,13 @@ public:
     };
   }
 };
+
+}  // namespace btck
+
+/******************************************************************************/
+// MARK: Transaction
+
+namespace btck {
 
 class Transaction
   : public detail::
@@ -583,20 +662,15 @@ private:
   }
 };
 
-inline auto to_string(verification_flags flags)
-{
-  auto const cflags = std::to_underlying(flags);
-  auto const len = BtcK_VerificationFlags_ToString(cflags, nullptr, 0);
-  if (len < 0) {
-    throw std::runtime_error("BtcK_VerificationFlags_ToString failed");
-  }
-  auto buf = std::string(static_cast<std::string::size_type>(len), '\0');
-  BtcK_VerificationFlags_ToString(cflags, buf.data(), len + 1);
-  return buf;
-}
+}  // namespace btck
 
-struct detail::verify_fn
-{
+/******************************************************************************/
+// MARK: Verify
+
+namespace btck {
+namespace detail {
+
+struct verify_fn {
   auto operator()(
     ScriptPubkey const& script_pubkey,
     std::int64_t amount,
@@ -616,7 +690,16 @@ struct detail::verify_fn
   }
 };
 
+}  // namespace detail
+
 constexpr auto const verify = detail::verify_fn{};
+
+}  // namespace btck
+
+/******************************************************************************/
+// MARK: BlockHash
+
+namespace btck {
 
 class BlockHash
 {
@@ -645,6 +728,13 @@ private:
   friend class Block;
   friend class Chain;
 };
+
+}  // namespace btck
+
+/******************************************************************************/
+// MARK: Block
+
+namespace btck {
 
 class Block
   : public detail::arc<BtcK_Block, BtcK_Block_Retain, BtcK_Block_Release>
@@ -686,15 +776,13 @@ private:
   }
 };
 
-enum class ValidationState : std::uint8_t
-{
+enum class ValidationState : std::uint8_t {
   VALID,
   INVALID,
   ERROR,
 };
 
-enum class ValidationResult : std::uint8_t
-{
+enum class ValidationResult : std::uint8_t {
   RESULT_UNSET,    //!< initial value. Block has not yet been rejected
   CONSENSUS,       //!< invalid by consensus rules (excluding any below reasons)
   CACHED_INVALID,  //!< this block was cached as being invalid and we didn't
@@ -712,8 +800,7 @@ enum class ValidationResult : std::uint8_t
 using Validation =
   std::function<void(Block const&, ValidationState, ValidationResult)>;
 
-enum class chain_type : BtcK_ChainType
-{
+enum class chain_type : BtcK_ChainType {
   mainnet = BtcK_ChainType_MAINNET,
   testnet = BtcK_ChainType_TESTNET,
   testnet_4 = BtcK_ChainType_TESTNET_4,
@@ -723,8 +810,7 @@ enum class chain_type : BtcK_ChainType
 
 using Log = std::function<void(std::string_view)>;
 
-enum class LogFlags : std::uint8_t
-{
+enum class LogFlags : std::uint8_t {
   TIMESTAMPS,
   TIME_MICROS,
   THREADNAMES,
@@ -752,12 +838,19 @@ public:
   // virtual void FatalErrorHandler(std::string_view error) {}
 };
 
+}  // namespace btck
+
+/******************************************************************************/
+// MARK: Chain
+
+namespace btck {
+
+
 class Chain : public detail::range<Chain const>
 {
 public:
   // poor man's cpp support for named arguments
-  struct KwArgs
-  {
+  struct KwArgs {
     KwArgs();
     auto chain_type(chain_type arg) && -> KwArgs;
     auto validation(Validation arg) && -> KwArgs;
@@ -779,10 +872,12 @@ public:
   // auto ProcessBlock(Block const& block, bool* new_block) -> bool;
 
   using value_type = Block;
+
   [[nodiscard]] auto size() const -> std::size_t
   {
     return BtcK_Chain_NumBlocks(this->impl_.get());
   }
+
   [[nodiscard]] auto operator[](std::size_t height) const -> value_type
   {
     return {BtcK_Chain_GetBlock(this->impl_.get(), height), detail::owned};
@@ -796,12 +891,11 @@ public:
   }
 
 private:
-  struct Deleter
-  {
+  struct deleter {
     void operator()(BtcK_Chain* chain) const { BtcK_Chain_Release(chain); }
   };
 
-  std::unique_ptr<BtcK_Chain, Deleter> impl_;
+  std::unique_ptr<BtcK_Chain, deleter> impl_;
 };
 
 }  // namespace btck

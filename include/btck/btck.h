@@ -139,6 +139,8 @@ typedef uint8_t BtcK_VerificationError;
 #define BtcK_VerificationError_SPENT_OUTPUTS_MISMATCH                          \
   ((BtcK_VerificationError)(5))
 
+BTCK_API char const* BtcK_VerificationError_Message(BtcK_VerificationError err);
+
 /*****************************************************************************/
 
 typedef uint32_t BtcK_VerificationFlags;
