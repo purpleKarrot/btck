@@ -124,33 +124,54 @@ BTCK_API char const* BtcK_Transaction_ToString(
 
 /*****************************************************************************/
 
-typedef uint32_t BtcK_ScriptVerify;
+typedef uint8_t BtcK_VerificationError;
 
-#define BtcK_ScriptVerify_NONE ((BtcK_ScriptVerify)(0))
+#define BtcK_VerificationError_TX_INPUT_INDEX ((BtcK_VerificationError)(1))
 
-#define BtcK_ScriptVerify_P2SH ((BtcK_ScriptVerify)(1U << 0))
+#define BtcK_VerificationError_INVALID_FLAGS ((BtcK_VerificationError)(2))
 
-#define BtcK_ScriptVerify_DERSIG ((BtcK_ScriptVerify)(1U << 2))
+#define BtcK_VerificationError_INVALID_FLAGS_COMBINATION                       \
+  ((BtcK_VerificationError)(3))
 
-#define BtcK_ScriptVerify_NULLDUMMY ((BtcK_ScriptVerify)(1U << 4))
+#define BtcK_VerificationError_SPENT_OUTPUTS_REQUIRED                          \
+  ((BtcK_VerificationError)(4))
 
-#define BtcK_ScriptVerify_CHECKLOCKTIMEVERIFY ((BtcK_ScriptVerify)(1U << 9))
+#define BtcK_VerificationError_SPENT_OUTPUTS_MISMATCH                          \
+  ((BtcK_VerificationError)(5))
 
-#define BtcK_ScriptVerify_CHECKSEQUENCEVERIFY ((BtcK_ScriptVerify)(1U << 10))
+/*****************************************************************************/
 
-#define BtcK_ScriptVerify_WITNESS ((BtcK_ScriptVerify)(1U << 11))
+typedef uint32_t BtcK_VerificationFlags;
 
-#define BtcK_ScriptVerify_TAPROOT ((BtcK_ScriptVerify)(1U << 17))
+#define BtcK_VerificationFlags_NONE ((BtcK_VerificationFlags)(0))
 
-#define BtcK_ScriptVerify_ALL                                                  \
-  ((BtcK_ScriptVerify)(BtcK_ScriptVerify_P2SH | BtcK_ScriptVerify_DERSIG |     \
-                       BtcK_ScriptVerify_NULLDUMMY |                           \
-                       BtcK_ScriptVerify_CHECKLOCKTIMEVERIFY |                 \
-                       BtcK_ScriptVerify_CHECKSEQUENCEVERIFY |                 \
-                       BtcK_ScriptVerify_WITNESS | BtcK_ScriptVerify_TAPROOT))
+#define BtcK_VerificationFlags_P2SH ((BtcK_VerificationFlags)(1U << 0))
 
-BTCK_API int BtcK_ScriptVerify_ToString(
-  BtcK_ScriptVerify flags, char* buf, size_t len
+#define BtcK_VerificationFlags_DERSIG ((BtcK_VerificationFlags)(1U << 2))
+
+#define BtcK_VerificationFlags_NULLDUMMY ((BtcK_VerificationFlags)(1U << 4))
+
+#define BtcK_VerificationFlags_CHECKLOCKTIMEVERIFY                             \
+  ((BtcK_VerificationFlags)(1U << 9))
+
+#define BtcK_VerificationFlags_CHECKSEQUENCEVERIFY                             \
+  ((BtcK_VerificationFlags)(1U << 10))
+
+#define BtcK_VerificationFlags_WITNESS ((BtcK_VerificationFlags)(1U << 11))
+
+#define BtcK_VerificationFlags_TAPROOT ((BtcK_VerificationFlags)(1U << 17))
+
+#define BtcK_VerificationFlags_ALL                                             \
+  ((BtcK_VerificationFlags)(BtcK_VerificationFlags_P2SH |                      \
+                            BtcK_VerificationFlags_DERSIG |                    \
+                            BtcK_VerificationFlags_NULLDUMMY |                 \
+                            BtcK_VerificationFlags_CHECKLOCKTIMEVERIFY |       \
+                            BtcK_VerificationFlags_CHECKSEQUENCEVERIFY |       \
+                            BtcK_VerificationFlags_WITNESS |                   \
+                            BtcK_VerificationFlags_TAPROOT))
+
+BTCK_API int BtcK_VerificationFlags_ToString(
+  BtcK_VerificationFlags flags, char* buf, size_t len
 );
 
 BTCK_API bool BtcK_Verify(
@@ -160,7 +181,7 @@ BTCK_API bool BtcK_Verify(
   struct BtcK_TransactionOutput const* const* spent_outputs,
   size_t spent_outputs_len,
   unsigned int input_index,
-  BtcK_ScriptVerify flags,
+  BtcK_VerificationFlags flags,
   struct BtcK_Error** err
 );
 

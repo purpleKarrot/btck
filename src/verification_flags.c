@@ -32,31 +32,33 @@ static int print(struct PrintContext* ctx, char const* format, ...)
 
 struct Entry
 {
-  BtcK_ScriptVerify flag;
+  BtcK_VerificationFlags flag;
   char const* name;
 };
 
 static struct Entry const flag_table[] = {
-  {BtcK_ScriptVerify_P2SH, "P2SH"},
-  {BtcK_ScriptVerify_DERSIG, "DERSIG"},
-  {BtcK_ScriptVerify_NULLDUMMY, "NULLDUMMY"},
-  {BtcK_ScriptVerify_CHECKLOCKTIMEVERIFY, "CHECKLOCKTIMEVERIFY"},
-  {BtcK_ScriptVerify_CHECKSEQUENCEVERIFY, "CHECKSEQUENCEVERIFY"},
-  {BtcK_ScriptVerify_WITNESS, "WITNESS"},
-  {BtcK_ScriptVerify_TAPROOT, "TAPROOT"},
+  {BtcK_VerificationFlags_P2SH, "P2SH"},
+  {BtcK_VerificationFlags_DERSIG, "DERSIG"},
+  {BtcK_VerificationFlags_NULLDUMMY, "NULLDUMMY"},
+  {BtcK_VerificationFlags_CHECKLOCKTIMEVERIFY, "CHECKLOCKTIMEVERIFY"},
+  {BtcK_VerificationFlags_CHECKSEQUENCEVERIFY, "CHECKSEQUENCEVERIFY"},
+  {BtcK_VerificationFlags_WITNESS, "WITNESS"},
+  {BtcK_VerificationFlags_TAPROOT, "TAPROOT"},
 };
 
-int BtcK_ScriptVerify_ToString(BtcK_ScriptVerify flags, char* buf, size_t len)
+int BtcK_VerificationFlags_ToString(
+  BtcK_VerificationFlags flags, char* buf, size_t len
+)
 {
-  if (flags == BtcK_ScriptVerify_ALL) {
+  if (flags == BtcK_VerificationFlags_ALL) {
     return snprintf(buf, len, "ALL");
   }
 
-  if (flags == BtcK_ScriptVerify_NONE) {
+  if (flags == BtcK_VerificationFlags_NONE) {
     return snprintf(buf, len, "NONE");
   }
 
-  if ((flags & ~BtcK_ScriptVerify_ALL) != 0) {
+  if ((flags & ~BtcK_VerificationFlags_ALL) != 0) {
     return -1;
   }
 

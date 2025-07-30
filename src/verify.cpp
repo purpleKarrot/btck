@@ -6,11 +6,12 @@
 #include <cstdint>
 #include <ranges>
 #include <span>
-#include <stdexcept>
+#include <system_error>
 #include <utility>
 #include <vector>
 
 #include <btck/btck.h>
+#include <btck/btck.hpp>
 #include <script/interpreter.h>
 
 #include "primitives/transaction.h"
@@ -23,35 +24,17 @@ class CScript;
 
 namespace {
 
-enum kernel_ScriptVerifyStatus
-{
-  kernel_SCRIPT_VERIFY_OK = 0,
-  kernel_SCRIPT_VERIFY_ERROR_TX_INPUT_INDEX,  //!< The provided input index is out of range of the actual number of inputs of the transaction.
-  kernel_SCRIPT_VERIFY_ERROR_INVALID_FLAGS,  //!< The provided bitfield for the flags was invalid.
-  kernel_SCRIPT_VERIFY_ERROR_INVALID_FLAGS_COMBINATION,  //!< The flags very combined in an invalid way.
-  kernel_SCRIPT_VERIFY_ERROR_SPENT_OUTPUTS_REQUIRED,  //!< The taproot flag was set, so valid spent_outputs have to be provided.
-  kernel_SCRIPT_VERIFY_ERROR_SPENT_OUTPUTS_MISMATCH,  //!< The number of spent outputs does not match the number of inputs of the tx.
-};
-
-class VerifyError : public std::logic_error
-{
-public:
-  VerifyError(int code)
-    : std::logic_error{""}
-  {}
-};
-
-inline auto verify(
+auto verify(
   CScript const& script_pubkey,
   std::int64_t const amount,
   CTransaction const& tx,
   std::vector<CTxOut> spent_outputs,
   unsigned int const input_index,
-  BtcK_ScriptVerify flags
+  BtcK_VerificationFlags flags
 )
 {
-  if ((flags & ~BtcK_ScriptVerify_ALL) != 0) {
-    throw VerifyError(kernel_SCRIPT_VERIFY_ERROR_INVALID_FLAGS);
+  if ((flags & ~BtcK_VerificationFlags_ALL) != 0) {
+    throw std::system_error(btck::verification_error::invalid_flags);
   }
 
   bool const cleanstack = (flags & SCRIPT_VERIFY_CLEANSTACK) != 0;
@@ -60,19 +43,21 @@ inline auto verify(
   bool const taproot = (flags & SCRIPT_VERIFY_TAPROOT) != 0;
 
   if ((cleanstack && !p2sh && !witness) || (witness && !p2sh)) {
-    throw VerifyError(kernel_SCRIPT_VERIFY_ERROR_INVALID_FLAGS_COMBINATION);
+    throw std::system_error(
+      btck::verification_error::invalid_flags_combination
+    );
   }
 
   if (taproot && spent_outputs.empty()) {
-    throw VerifyError(kernel_SCRIPT_VERIFY_ERROR_SPENT_OUTPUTS_REQUIRED);
+    throw std::system_error(btck::verification_error::spent_outputs_required);
   }
 
   if (!spent_outputs.empty() && spent_outputs.size() != tx.vin.size()) {
-    throw VerifyError(kernel_SCRIPT_VERIFY_ERROR_SPENT_OUTPUTS_MISMATCH);
+    throw std::system_error(btck::verification_error::spent_outputs_mismatch);
   }
 
   if (input_index >= tx.vin.size()) {
-    throw VerifyError(kernel_SCRIPT_VERIFY_ERROR_TX_INPUT_INDEX);
+    throw std::system_error(btck::verification_error::tx_input_index);
   }
 
   PrecomputedTransactionData txdata{tx};
@@ -100,7 +85,7 @@ auto BtcK_Verify(
   struct BtcK_TransactionOutput const* const* spent_outputs,
   std::size_t spent_outputs_len,
   unsigned int input_index,
-  BtcK_ScriptVerify flags,
+  BtcK_VerificationFlags flags,
   struct BtcK_Error** err
 ) -> bool
 {
@@ -110,7 +95,7 @@ auto BtcK_Verify(
       std::views::transform([](auto const* out) { return out->tx_out; });
     return verify(
       script_pubkey->script, amount, *tx->transaction,
-      std::vector<CTxOut>(spent_outputs_view.begin(), spent_outputs_view.end()),
+      std::vector(spent_outputs_view.begin(), spent_outputs_view.end()),
       input_index, flags
     );
   });

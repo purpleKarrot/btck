@@ -17,6 +17,34 @@
 
 #include <btck/btck.h>
 
+namespace btck {
+
+enum class verification_error : BtcK_VerificationError
+{
+  tx_input_index = BtcK_VerificationError_TX_INPUT_INDEX,
+  invalid_flags = BtcK_VerificationError_INVALID_FLAGS,
+  invalid_flags_combination = BtcK_VerificationError_INVALID_FLAGS_COMBINATION,
+  spent_outputs_required = BtcK_VerificationError_SPENT_OUTPUTS_REQUIRED,
+  spent_outputs_mismatch = BtcK_VerificationError_SPENT_OUTPUTS_MISMATCH,
+};
+
+auto make_error_code(verification_error err) -> std::error_code;
+
+enum class verification_flags : BtcK_VerificationFlags
+{
+  none = BtcK_VerificationFlags_NONE,
+  p2sh = BtcK_VerificationFlags_P2SH,
+  dersig = BtcK_VerificationFlags_DERSIG,
+  nulldummy = BtcK_VerificationFlags_NULLDUMMY,
+  checklocktimeverify = BtcK_VerificationFlags_CHECKLOCKTIMEVERIFY,
+  checksequenceverify = BtcK_VerificationFlags_CHECKSEQUENCEVERIFY,
+  witness = BtcK_VerificationFlags_WITNESS,
+  taproot = BtcK_VerificationFlags_TAPROOT,
+  all = BtcK_VerificationFlags_ALL,
+};
+
+}  // namespace btck
+
 namespace btck::detail {
 
 template <typename T>
@@ -369,11 +397,11 @@ auto invoke(Function function, Args... args)
 }
 
 template <typename E>
-struct is_flag : std::false_type
+struct is_flag_enum : std::false_type
 {};
 
 template <typename E>
-concept flag = is_flag<E>::value;
+concept flag_enum = is_flag_enum<E>::value;
 
 struct verify_fn;
 
@@ -391,51 +419,59 @@ struct std::iterator_traits<btck::detail::range_iterator<Range>>
   using iterator_category = std::random_access_iterator_tag;
 };
 
+template <>
+struct std::is_error_code_enum<btck::verification_error> : std::true_type
+{};
+
+template <>
+struct btck::detail::is_flag_enum<btck::verification_flags> : std::true_type
+{};
+
 namespace btck {
 
-template <detail::flag E>
+template <detail::flag_enum E>
 constexpr auto operator|(E left, E right)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(left) | static_cast<U>(right));
 }
 
-template <detail::flag E>
+template <detail::flag_enum E>
 constexpr auto operator&(E left, E right)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(left) & static_cast<U>(right));
 }
 
-template <detail::flag E>
+template <detail::flag_enum E>
 constexpr auto operator^(E left, E right)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(left) ^ static_cast<U>(right));
 }
 
-template <detail::flag E>
+template <detail::flag_enum E>
 constexpr auto operator~(E e)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(~static_cast<U>(e));
 }
 
-template <detail::flag E>
+template <detail::flag_enum E>
 constexpr auto operator|=(E& left, E right) -> decltype(auto)
 {
   left = left | right;
   return left;
 }
 
-template <detail::flag E>
+template <detail::flag_enum E>
 constexpr auto operator&=(E& left, E right) -> decltype(auto)
 {
   left = left & right;
   return left;
 }
 
-template <detail::flag E>
+template <detail::flag_enum E>
 constexpr auto operator^=(E& left, E right) -> decltype(auto)
 {
   left = left ^ right;
@@ -547,41 +583,15 @@ private:
   }
 };
 
-enum class VerificationError : std::uint8_t
-{
-  TX_INPUT_INDEX,
-  INVALID_FLAGS,
-  INVALID_FLAGS_COMBINATION,
-  SPENT_OUTPUTS_REQUIRED,
-  SPENT_OUTPUTS_MISMATCH,
-};
-
-enum class script_verify : BtcK_ScriptVerify
-{
-  none = BtcK_ScriptVerify_NONE,
-  p2sh = BtcK_ScriptVerify_P2SH,
-  dersig = BtcK_ScriptVerify_DERSIG,
-  nulldummy = BtcK_ScriptVerify_NULLDUMMY,
-  checklocktimeverify = BtcK_ScriptVerify_CHECKLOCKTIMEVERIFY,
-  checksequenceverify = BtcK_ScriptVerify_CHECKSEQUENCEVERIFY,
-  witness = BtcK_ScriptVerify_WITNESS,
-  taproot = BtcK_ScriptVerify_TAPROOT,
-  all = BtcK_ScriptVerify_ALL,
-};
-
-template <>
-struct detail::is_flag<script_verify> : std::true_type
-{};
-
-inline auto to_string(script_verify flags)
+inline auto to_string(verification_flags flags)
 {
   auto const cflags = std::to_underlying(flags);
-  auto const len = BtcK_ScriptVerify_ToString(cflags, nullptr, 0);
+  auto const len = BtcK_VerificationFlags_ToString(cflags, nullptr, 0);
   if (len < 0) {
-    throw std::runtime_error("BtcK_ScriptVerify_ToString failed");
+    throw std::runtime_error("BtcK_VerificationFlags_ToString failed");
   }
   auto buf = std::string(static_cast<std::string::size_type>(len), '\0');
-  BtcK_ScriptVerify_ToString(cflags, buf.data(), len + 1);
+  BtcK_VerificationFlags_ToString(cflags, buf.data(), len + 1);
   return buf;
 }
 
@@ -593,7 +603,7 @@ struct detail::verify_fn
     Transaction const& tx_to,
     std::span<TransactionOutput const> spent_outputs,
     unsigned int input_index,
-    script_verify flags
+    verification_flags flags
   ) const -> bool
   {
     return detail::invoke(

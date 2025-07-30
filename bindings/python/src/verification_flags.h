@@ -8,8 +8,8 @@
 
 #include <btck/btck.h>
 
-extern PyTypeObject ScriptVerify_Type;
+extern PyTypeObject VerificationFlags_Type;
 
-void ScriptVerify_Init(void);
-PyObject* ScriptVerify_New(BtcK_ScriptVerify value);
-int ScriptVerify_Convert(PyObject* object, BtcK_ScriptVerify* out);
+void VerificationFlags_Init(void);
+PyObject* VerificationFlags_New(BtcK_VerificationFlags value);
+int VerificationFlags_Convert(PyObject* object, BtcK_VerificationFlags* out);

@@ -9,9 +9,9 @@
 #include "src/block_hash.h"
 #include "src/chain.h"
 #include "src/script_pubkey.h"
-#include "src/script_verify.h"
 #include "src/transaction.h"
 #include "src/transaction_output.h"
+#include "src/verification_flags.h"
 
 // PyObject* ComparisonNotImplemented(void const* left, void const* right, int op)
 // {
@@ -55,12 +55,12 @@
 //   }
 //   // clang-format on
 //
-//   kernel_ScriptVerifyStatus status;
+//   kernel_VerificationFlagsStatus status;
 //   bool result = kernel_verify_script(
 //     ScriptPubkey_GetImpl(script_pubkey), amount, Transaction_GetImpl(tx_to), NULL, 0, input_index, flags, &status
 //   );
 //
-//   return ScriptVerifyStatus_New(status);
+//   return VerificationFlagsStatus_New(status);
 // }
 
 static PyTypeObject* const types[] = {
@@ -71,10 +71,10 @@ static PyTypeObject* const types[] = {
   &Chain_Type,
   &Chain_BlocksSlice_Type,
   &ScriptPubkey_Type,
-  &ScriptVerify_Type,
   &Transaction_Type,
   &Transaction_OutputsSlice_Type,
   &TransactionOutput_Type,
+  &VerificationFlags_Type,
 };
 
 static int exec(PyObject* module)
@@ -85,7 +85,7 @@ static int exec(PyObject* module)
     }
   }
 
-  ScriptVerify_Init();
+  VerificationFlags_Init();
 
   return 0;
 }

@@ -84,11 +84,13 @@ PyObject* Slice_subscript(PyObject* self, PyObject* arg)
       return NULL;
     }
 
+    Py_ssize_t const length =
+      PySlice_AdjustIndices(seq->sq_length(self), &start, &stop, step);
+
     slice->seq = Py_NewRef(self);
     slice->start = start;
     slice->step = step;
-    slice->length =
-      PySlice_AdjustIndices(seq->sq_length(self), &start, &stop, step);
+    slice->length = length;
 
     return (PyObject*)slice;
   }

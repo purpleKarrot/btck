@@ -130,14 +130,15 @@ target_sources(btck
     src/util/error.cpp
     src/block.cpp
     src/chain.cpp
-    src/script_flags.c
     src/script_pubkey.cpp
     src/transaction.cpp
     src/transaction_output.cpp
+    src/verification_error.cpp
     src/verify.cpp
+    src/verification_flags.c
   )
 
-target_compile_features(btck PRIVATE cxx_std_20)
+target_compile_features(btck PRIVATE cxx_std_23)
 
 set_target_properties(btck PROPERTIES
   CXX_VISIBILITY_PRESET hidden

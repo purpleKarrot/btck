@@ -12,9 +12,9 @@ python3_add_library(btck-python WITH_SOABI
   src/block_hash.c
   src/chain.c
   src/script_pubkey.c
-  src/script_verify.c
   src/transaction.c
   src/transaction_output.c
+  src/verification_flags.c
   )
 
 target_link_libraries(btck-python PRIVATE BtcK::btck)

@@ -9,9 +9,9 @@
 
 struct BtcK_Error
 {
+  int code;
   char* domain;
   char* message;
-  int code;
 };
 
 static struct BtcK_Error OOM_ERROR = {

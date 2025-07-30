@@ -15,7 +15,7 @@ class _Slice[T]:
 
 
 @typing.final
-class ScriptVerify:
+class VerificationFlags:
     ALL: typing.ClassVar[typing.Self]
     NONE: typing.ClassVar[typing.Self]
     P2SH: typing.ClassVar[typing.Self]
@@ -31,6 +31,7 @@ class ScriptVerify:
     def __and__(self, other: typing.Self) -> typing.Self: ...
     def __xor__(self, other: typing.Self) -> typing.Self: ...
     def __invert__(self) -> typing.Self: ...
+
 
 @typing.final
 class Block:

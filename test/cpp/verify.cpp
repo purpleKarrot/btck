@@ -9,21 +9,23 @@
 
 TEST(Verify, Flags)
 {
-  EXPECT_EQ(to_string(btck::script_verify::all), "ALL");
-  EXPECT_EQ(to_string(btck::script_verify::none), "NONE");
+  EXPECT_EQ(to_string(btck::verification_flags::all), "ALL");
+  EXPECT_EQ(to_string(btck::verification_flags::none), "NONE");
   EXPECT_EQ(
-    to_string(btck::script_verify::witness | btck::script_verify::taproot),
+    to_string(
+      btck::verification_flags::witness | btck::verification_flags::taproot
+    ),
     "WITNESS | TAPROOT"
   );
 
-  EXPECT_ANY_THROW(to_string(static_cast<btck::script_verify>(2)));
+  EXPECT_ANY_THROW(to_string(static_cast<btck::verification_flags>(2)));
 
   EXPECT_EQ(
-    btck::script_verify::all,
-    btck::script_verify::p2sh | btck::script_verify::dersig |
-      btck::script_verify::nulldummy |
-      btck::script_verify::checklocktimeverify |
-      btck::script_verify::checksequenceverify | btck::script_verify::witness |
-      btck::script_verify::taproot
+    btck::verification_flags::all,
+    btck::verification_flags::p2sh | btck::verification_flags::dersig |
+      btck::verification_flags::nulldummy |
+      btck::verification_flags::checklocktimeverify |
+      btck::verification_flags::checksequenceverify |
+      btck::verification_flags::witness | btck::verification_flags::taproot
   );
 }

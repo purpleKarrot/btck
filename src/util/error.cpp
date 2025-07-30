@@ -6,6 +6,7 @@
 
 #include <exception>
 #include <new>
+#include <system_error>
 
 #include <btck/btck.h>
 
@@ -18,6 +19,10 @@ auto TranslateException() -> BtcK_Error*
   }
   catch (std::bad_alloc const& e) {
     return BtcK_Error_New("Memory", 0, e.what());
+  }
+  catch (std::system_error const& e) {
+    auto const& code = e.code();
+    return BtcK_Error_New(code.category().name(), code.value(), e.what());
   }
   catch (std::exception const& e) {
     return BtcK_Error_New("Object", 2, e.what());

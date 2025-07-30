@@ -5,4 +5,4 @@
 import btck
 
 def test_script_verify():
-    assert btck.ScriptVerify.ALL|btck.ScriptVerify.NONE == btck.ScriptVerify.ALL
+    assert btck.VerificationFlags.ALL|btck.VerificationFlags.NONE == btck.VerificationFlags.ALL
