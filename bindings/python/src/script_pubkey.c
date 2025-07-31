@@ -12,8 +12,6 @@
 
 #include "_error.h"
 
-struct BtcK_ScriptPubkey;
-
 struct Self {
   PyObject_HEAD
   struct BtcK_ScriptPubkey* impl;

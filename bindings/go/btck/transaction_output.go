@@ -16,9 +16,13 @@ type TransactionOutput struct {
 	ptr *C.struct_BtcK_TransactionOutput
 }
 
-func NewTransactionOutput(amount int64, scriptPubkey *ScriptPubkey) *TransactionOutput {
-	ptr := C.BtcK_TransactionOutput_New(C.int64_t(amount), scriptPubkey.ptr)
-	return newTransactionOutputFinalized(ptr)
+func NewTransactionOutput(amount int64, scriptPubkey *ScriptPubkey) (*TransactionOutput, error) {
+	var err *C.struct_BtcK_Error
+	ptr := C.BtcK_TransactionOutput_New(C.int64_t(amount), scriptPubkey.ptr, &err)
+	if err != nil {
+		return nil, newError(err)
+	}
+	return newTransactionOutputFinalized(ptr), nil
 }
 
 func newTransactionOutputFinalized(ptr *C.struct_BtcK_TransactionOutput) *TransactionOutput {
@@ -33,6 +37,11 @@ func (t *TransactionOutput) Amount() int64 {
 	return int64(C.BtcK_TransactionOutput_GetAmount(t.ptr))
 }
 
-func (t *TransactionOutput) ScriptPubkey() *ScriptPubkey {
-	return &ScriptPubkey{C.BtcK_TransactionOutput_GetScriptPubkey(t.ptr)}
+func (t *TransactionOutput) ScriptPubkey() (*ScriptPubkey, error) {
+	var err *C.struct_BtcK_Error
+	ptr := C.BtcK_TransactionOutput_GetScriptPubkey(t.ptr, &err)
+	if err != nil {
+		return nil, newError(err)
+	}
+	return newScriptPubkeyFinalized(ptr), nil
 }

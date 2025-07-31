@@ -12,8 +12,6 @@
 #include "_slice.h"
 #include "transaction_output.h"
 
-struct BtcK_Transaction;
-
 struct Self {
   PyObject_HEAD
   struct BtcK_Transaction* impl;

@@ -11,8 +11,6 @@
 
 #include "script_pubkey.h"
 
-struct BtcK_TransactionOutput;
-
 struct Self {
   PyObject_HEAD
   struct BtcK_TransactionOutput* impl;

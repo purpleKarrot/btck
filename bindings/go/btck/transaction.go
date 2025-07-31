@@ -16,9 +16,13 @@ type Transaction struct {
 	ptr *C.struct_BtcK_Transaction
 }
 
-func NewTransaction(raw []byte) *Transaction {
-	ptr := C.BtcK_Transaction_New(ptrToSlice(raw), C.size_t(len(raw)))
-	return newTransactionFinalized(ptr)
+func NewTransaction(raw []byte) (*Transaction, error) {
+	var err *C.struct_BtcK_Error
+	ptr := C.BtcK_Transaction_New(ptrToSlice(raw), C.size_t(len(raw)), &err)
+	if err != nil {
+		return nil, newError(err)
+	}
+	return newTransactionFinalized(ptr), nil
 }
 
 func newTransactionFinalized(ptr *C.struct_BtcK_Transaction) *Transaction {

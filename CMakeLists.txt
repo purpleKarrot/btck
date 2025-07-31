@@ -113,7 +113,7 @@ if(BTCK_ENABLE_PYTHON)
 endif()
 
 option(BTCK_ENABLE_VALA "Enable Vala/Genie" OFF)
-if(BTCK_ENABLE_PYTHON)
+if(BTCK_ENABLE_VALA)
   add_subdirectory(bindings/vala)
   add_subdirectory(test/genie)
   add_subdirectory(test/vala)

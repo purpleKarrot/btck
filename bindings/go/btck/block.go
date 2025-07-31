@@ -18,9 +18,13 @@ type Block struct {
 	ptr *C.struct_BtcK_Block
 }
 
-func NewBlock(raw []byte) *Block {
-	ptr := C.BtcK_Block_New(ptrToSlice(raw), C.size_t(len(raw)))
-	return newBlockFinalized(ptr)
+func NewBlock(raw []byte) (*Block, error) {
+	var err *C.struct_BtcK_Error
+	ptr := C.BtcK_Block_New(ptrToSlice(raw), C.size_t(len(raw)), &err)
+	if err != nil {
+		return nil, newError(err)
+	}
+	return newBlockFinalized(ptr), nil
 }
 
 func newBlockFinalized(ptr *C.struct_BtcK_Block) *Block {
@@ -42,11 +46,11 @@ func (b *Block) Hash() BlockHash {
 }
 
 func (b *Block) Len() int {
-	return int(C.BtcK_Block_GetSize(b.ptr))
+	return int(C.BtcK_Block_NumTransactions(b.ptr))
 }
 
 func (b *Block) At(idx int) *Transaction {
-	return &Transaction{C.BtcK_Block_At(b.ptr, C.size_t(idx))}
+	return &Transaction{C.BtcK_Block_GetTransaction(b.ptr, C.size_t(idx))}
 }
 
 func (b *Block) Bytes() []byte {

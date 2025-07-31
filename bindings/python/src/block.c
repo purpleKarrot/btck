@@ -12,8 +12,6 @@
 #include "block_hash.h"
 #include "transaction.h"
 
-struct BtcK_Block;
-
 struct Self {
   PyObject_HEAD
   struct BtcK_Block* impl;

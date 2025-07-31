@@ -28,7 +28,7 @@ func TestTransaction(t *testing.T) {
 		0x07, 0x00,
 	}
 
-	tx := btck.NewTransaction(data)
+	tx, _ := btck.NewTransaction(data)
 
 	if tx.Len() != 2 {
 		t.Fatalf("expected 2 outputs, got %d", tx.Len())

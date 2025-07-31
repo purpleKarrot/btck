@@ -16,9 +16,13 @@ type ScriptPubkey struct {
 	ptr *C.struct_BtcK_ScriptPubkey
 }
 
-func NewScriptPubkey(raw []byte) *ScriptPubkey {
-	ptr := C.BtcK_ScriptPubkey_New(ptrToSlice(raw), C.size_t(len(raw)))
-	return newScriptPubkeyFinalized(ptr)
+func NewScriptPubkey(raw []byte) (*ScriptPubkey, error) {
+	var err *C.struct_BtcK_Error
+	ptr := C.BtcK_ScriptPubkey_New(ptrToSlice(raw), C.size_t(len(raw)), &err)
+	if err != nil {
+		return nil, newError(err)
+	}
+	return newScriptPubkeyFinalized(ptr), nil
 }
 
 func newScriptPubkeyFinalized(ptr *C.struct_BtcK_ScriptPubkey) *ScriptPubkey {

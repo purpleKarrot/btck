@@ -78,9 +78,7 @@ class TransactionOutput:
 
 
 @typing.final
-class VerificationError(ValueError):
-    code: int
-    message: str
+class VerificationError(ValueError): ...
 
 
 def verify_script(
