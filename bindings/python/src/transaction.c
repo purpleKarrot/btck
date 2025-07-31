@@ -4,18 +4,17 @@
 
 #include "transaction.h"
 
+#include <btck/btck.h>
+
 #include <assert.h>
 #include <stddef.h>
-
-#include <btck/btck.h>
 
 #include "_slice.h"
 #include "transaction_output.h"
 
 struct BtcK_Transaction;
 
-struct Self
-{
+struct Self {
   PyObject_HEAD
   struct BtcK_Transaction* impl;
 };
@@ -26,6 +25,11 @@ static PyObject* get_outputs_slice(struct Self const* self, void* closure);
 
 static Py_ssize_t num_outputs(struct Self const* self);
 static PyObject* get_output(struct Self* self, Py_ssize_t idx);
+
+static PyGetSetDef getset[] = {
+  {"outputs", (getter)get_outputs_slice, NULL, "", NULL},
+  {},
+};
 
 static PySequenceMethods output_as_sequence = {
   .sq_length = (lenfunc)num_outputs,
@@ -45,10 +49,7 @@ PyTypeObject Transaction_Type = {
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
-  .tp_getset = (PyGetSetDef[]){
-    {"outputs", (getter)get_outputs_slice, NULL, "", NULL},
-    {},
-  },
+  .tp_getset = getset,
 };
 
 PyTypeObject Transaction_OutputsSlice_Type = {
@@ -68,8 +69,7 @@ static void dealloc(struct Self* self)
 }
 
 static PyObject* new(
-  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs
-)
+  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs)
 {
   static char* kwlist[] = {"raw", NULL};
 
@@ -82,8 +82,7 @@ static PyObject* new(
 }
 
 static PyObject* get_outputs_slice(
-  struct Self const* self, void* Py_UNUSED(closure)
-)
+  struct Self const* self, void* Py_UNUSED(closure))
 {
   struct Self* slice =
     PyObject_New(struct Self, &Transaction_OutputsSlice_Type);

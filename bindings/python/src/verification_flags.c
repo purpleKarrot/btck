@@ -7,8 +7,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-struct Self
-{
+struct Self {
   PyObject_HEAD
   BtcK_VerificationFlags impl;
 };
@@ -37,8 +36,7 @@ PyTypeObject VerificationFlags_Type = {
   .tp_as_number = &as_number,
 };
 
-struct Enum
-{
+struct Enum {
   char const* name;
   struct Self value;
 };
@@ -50,8 +48,7 @@ static struct Enum enums[] = {
   {"DERSIG", {PyObject_HEAD_INIT(&VerificationFlags_Type) BtcK_VerificationFlags_DERSIG}},
   {"NULLDUMMY",
    {PyObject_HEAD_INIT(
-     &VerificationFlags_Type
-   ) BtcK_VerificationFlags_NULLDUMMY}},
+     &VerificationFlags_Type) BtcK_VerificationFlags_NULLDUMMY}},
   {"CHECKLOCKTIMEVERIFY",
    { PyObject_HEAD_INIT(&VerificationFlags_Type)
     BtcK_VerificationFlags_CHECKLOCKTIMEVERIFY}},
@@ -60,12 +57,10 @@ static struct Enum enums[] = {
     BtcK_VerificationFlags_CHECKSEQUENCEVERIFY}},
   {"WITNESS",
    {PyObject_HEAD_INIT(
-     &VerificationFlags_Type
-   ) BtcK_VerificationFlags_WITNESS}},
+     &VerificationFlags_Type) BtcK_VerificationFlags_WITNESS}},
   {"TAPROOT",
    {PyObject_HEAD_INIT(
-     &VerificationFlags_Type
-   ) BtcK_VerificationFlags_TAPROOT}},
+     &VerificationFlags_Type) BtcK_VerificationFlags_TAPROOT}},
   {},
 };
 
@@ -90,26 +85,24 @@ static PyObject* nb_invert(struct Self const* self)
 }
 
 static PyObject* ComparisonNotImplemented(
-  void const* left, void const* right, int op
-)
+  void const* left, void const* right, int op)
 {
   static char const* const opstrings[] = {"<", "<=", "==", "!=", ">", ">="};
   return PyErr_Format(
     PyExc_TypeError, "'%s' is not supported between instances of %R and %R",
-    opstrings[op], Py_TYPE(left), Py_TYPE(right)
-  );
+    opstrings[op], Py_TYPE(left), Py_TYPE(right));
 }
 
 static PyObject* richcmp(struct Self const* self, PyObject* other, int op)
 {
-  if ((op != Py_EQ && op != Py_NE) ||
-      !PyObject_TypeCheck(other, &VerificationFlags_Type)) {
+  if (
+    (op != Py_EQ && op != Py_NE) ||
+    !PyObject_TypeCheck(other, &VerificationFlags_Type)) {
     return ComparisonNotImplemented(self, other, op);
   }
 
   return PyBool_FromLong(
-    (op == Py_EQ) == (self->impl == ((struct Self*)other)->impl)
-  );
+    (op == Py_EQ) == (self->impl == ((struct Self*)other)->impl));
 }
 
 void VerificationFlags_Init(void)

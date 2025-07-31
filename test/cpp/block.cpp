@@ -2,12 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <gtest/gtest.h>
+
+#include <btck/btck.hpp>
 #include <cstdint>
 #include <span>
 #include <string>
-
-#include <btck/btck.hpp>
-#include <gtest/gtest.h>
 
 TEST(Block, Genesis)
 {
@@ -67,8 +67,7 @@ TEST(Block, Genesis)
   EXPECT_EQ(txout.amount(), 50'00000000);
   EXPECT_EQ(
     txout.script_pubkey(),
-    btck::ScriptPubkey{as_bytes(std::span{script_pubkey})}
-  );
+    btck::ScriptPubkey{as_bytes(std::span{script_pubkey})});
 
   for (auto const& tx : block) {
     for (auto const& txout : tx) {

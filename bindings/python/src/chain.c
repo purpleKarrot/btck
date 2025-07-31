@@ -4,15 +4,14 @@
 
 #include "chain.h"
 
-#include <stddef.h>
-
 #include <btck/btck.h>
+
+#include <stddef.h>
 
 #include "_slice.h"
 #include "block.h"
 
-struct Self
-{
+struct Self {
   PyObject_HEAD
   struct BtcK_Chain* impl;
 };
@@ -23,6 +22,11 @@ static PyObject* get_blocks_slice(struct Self const* self, void* closure);
 
 static Py_ssize_t num_blocks(struct Self const* self);
 static PyObject* get_block(struct Self* self, Py_ssize_t idx);
+
+static PyGetSetDef getset[] = {
+  {"blocks", (getter)get_blocks_slice, NULL, "", NULL},
+  {},
+};
 
 static PySequenceMethods blocks_as_sequence = {
   .sq_length = (lenfunc)num_blocks,
@@ -42,10 +46,7 @@ PyTypeObject Chain_Type = {
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
-  .tp_getset = (PyGetSetDef[]){
-    {"blocks", (getter)get_blocks_slice, NULL, "", NULL},
-    {},
-  },
+  .tp_getset = getset,
 };
 
 PyTypeObject Chain_BlocksSlice_Type = {
@@ -65,8 +66,7 @@ static void dealloc(struct Self* self)
 }
 
 static PyObject* new(
-  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs
-)
+  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs)
 {
   //   ChainMan(
   //       Context const& context, ChainstateManagerOptions const& chainman_opts)
@@ -104,8 +104,7 @@ static PyObject* new(
 //   }
 
 static PyObject* get_blocks_slice(
-  struct Self const* self, void* Py_UNUSED(closure)
-)
+  struct Self const* self, void* Py_UNUSED(closure))
 {
   struct Self* slice = PyObject_New(struct Self, &Chain_BlocksSlice_Type);
   if (slice == NULL) {

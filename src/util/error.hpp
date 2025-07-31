@@ -12,8 +12,7 @@ namespace util {
 
 auto TranslateException() -> BtcK_Error*;
 
-template <typename Function>
-auto WrapFn(BtcK_Error** err, Function&& function)
+template <typename Function> auto WrapFn(BtcK_Error** err, Function&& function)
 {
   try {
     return function();

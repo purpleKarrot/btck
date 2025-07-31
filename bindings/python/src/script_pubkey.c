@@ -4,18 +4,17 @@
 
 #include "script_pubkey.h"
 
+#include <btck/btck.h>
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
-
-#include <btck/btck.h>
 
 #include "_error.h"
 
 struct BtcK_ScriptPubkey;
 
-struct Self
-{
+struct Self {
   PyObject_HEAD
   struct BtcK_ScriptPubkey* impl;
 };
@@ -26,6 +25,15 @@ static PyObject* richcmp(struct Self const* self, PyObject* other, int op);
 static int getbuffer(struct Self const* self, Py_buffer* view, int flags);
 static PyObject* bytes(struct Self const* self, PyObject* ignored);
 
+static PyBufferProcs as_buffer = {
+  .bf_getbuffer = (getbufferproc)getbuffer,
+};
+
+static PyMethodDef methods[] = {
+  {"__bytes__", (PyCFunction)bytes, METH_NOARGS, ""},
+  {},
+};
+
 PyTypeObject ScriptPubkey_Type = {
   PyVarObject_HEAD_INIT(NULL, 0)
   .tp_name = "btck.ScriptPubkey",
@@ -35,14 +43,8 @@ PyTypeObject ScriptPubkey_Type = {
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
   .tp_richcompare = (richcmpfunc)richcmp,
-  .tp_as_buffer =
-    &(PyBufferProcs){
-      .bf_getbuffer = (getbufferproc)getbuffer,
-    },
-  .tp_methods = (PyMethodDef[]){
-    {"__bytes__", (PyCFunction)bytes, METH_NOARGS, ""},
-    {},
-  },
+  .tp_as_buffer = &as_buffer,
+  .tp_methods = methods,
 };
 
 static void dealloc(struct Self* self)
@@ -85,8 +87,7 @@ static int getbuffer(struct Self const* self, Py_buffer* view, int flags)
   size_t len = 0;
   void const* data = BtcK_ScriptPubkey_AsBytes(self->impl, &len);
   return PyBuffer_FillInfo(
-    view, (PyObject*)self, (void*)data, (Py_ssize_t)len, true, flags
-  );
+    view, (PyObject*)self, (void*)data, (Py_ssize_t)len, true, flags);
 }
 
 static PyObject* bytes(struct Self const* self, PyObject* Py_UNUSED(ignored))

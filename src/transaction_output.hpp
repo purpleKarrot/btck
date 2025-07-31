@@ -4,16 +4,15 @@
 
 #pragma once
 
-#include <utility>
-
 #include <primitives/transaction.h>
+
+#include <utility>
 
 #include "consensus/amount.h"
 #include "script/script.h"
 #include "util/ref_counted.hpp"
 
-struct BtcK_TransactionOutput : util::RefCounted<BtcK_TransactionOutput>
-{
+struct BtcK_TransactionOutput : util::RefCounted<BtcK_TransactionOutput> {
   BtcK_TransactionOutput(CTxOut arg)
     : tx_out{std::move(arg)}
   {}

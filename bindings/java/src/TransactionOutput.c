@@ -4,10 +4,10 @@
 
 #include "TransactionOutput.h"
 
+#include <btck/btck.h>
+
 #include <stddef.h>
 #include <stdint.h>
-
-#include <btck/btck.h>
 
 static jfieldID get_impl_field(JNIEnv* env, jobject obj)
 {
@@ -16,8 +16,7 @@ static jfieldID get_impl_field(JNIEnv* env, jobject obj)
 }
 
 static struct BtcK_ScriptPubkey* get_scriptpubkey_ptr(
-  JNIEnv* env, jobject scriptPubkeyObj
-)
+  JNIEnv* env, jobject scriptPubkeyObj)
 {
   if (!scriptPubkeyObj) {
     return NULL;
@@ -30,8 +29,7 @@ static struct BtcK_ScriptPubkey* get_scriptpubkey_ptr(
 }
 
 JNIEXPORT jlong JNICALL Java_TransactionOutput_construct(
-  JNIEnv* env, jclass clazz, jlong amount, jobject scriptPubkeyObj
-)
+  JNIEnv* env, jclass clazz, jlong amount, jobject scriptPubkeyObj)
 {
   (void)clazz;
   struct BtcK_ScriptPubkey* script_pubkey =

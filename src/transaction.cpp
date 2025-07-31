@@ -4,16 +4,16 @@
 
 #include "transaction.hpp"
 
-#include <cstddef>
-#include <memory>
-#include <span>
-#include <utility>
+#include <btck/btck.h>
+#include <primitives/transaction.h>
 
 #include <serialize.h>
 #include <streams.h>
 
-#include <btck/btck.h>
-#include <primitives/transaction.h>
+#include <cstddef>
+#include <memory>
+#include <span>
+#include <utility>
 
 #include "span.h"
 #include "transaction_output.hpp"
@@ -46,13 +46,12 @@ BtcK_Transaction::BtcK_Transaction(std::span<std::byte const> raw)
 extern "C" {
 
 auto BtcK_Transaction_New(
-  void const* raw, std::size_t len, struct BtcK_Error** err
-) -> BtcK_Transaction*
+  void const* raw, std::size_t len, struct BtcK_Error** err)
+  -> BtcK_Transaction*
 {
   return util::WrapFn(err, [=] {
     return new BtcK_Transaction{
-      std::span{reinterpret_cast<std::byte const*>(raw), len}
-    };
+      std::span{reinterpret_cast<std::byte const*>(raw), len}};
   });
 }
 

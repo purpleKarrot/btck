@@ -4,10 +4,10 @@
 
 #include "chain.hpp"
 
+#include <btck/btck.h>
+
 #include <cstddef>
 #include <span>
-
-#include <btck/btck.h>
 
 #include "block.hpp"
 #include "chain.h"

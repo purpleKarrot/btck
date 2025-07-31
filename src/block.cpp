@@ -4,6 +4,11 @@
 
 #include "block.hpp"
 
+#include <btck/btck.h>
+#include <primitives/transaction.h>
+
+#include <streams.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -11,11 +16,6 @@
 #include <span>
 #include <stdexcept>
 #include <vector>
-
-#include <streams.h>
-
-#include <btck/btck.h>
-#include <primitives/transaction.h>
 
 #include "node/blockstorage.h"
 #include "primitives/block.h"
@@ -45,8 +45,7 @@ auto BtcK_Block_New(void const* raw, std::size_t len, struct BtcK_Error** err)
 {
   return util::WrapFn(err, [=] {
     return new BtcK_Block{
-      std::span{reinterpret_cast<std::byte const*>(raw), len}
-    };
+      std::span{reinterpret_cast<std::byte const*>(raw), len}};
   });
 }
 
@@ -71,7 +70,8 @@ auto BtcK_Block_NumTransactions(BtcK_Block const* self) -> std::size_t
   return self->block.vtx.size();
 }
 
-auto BtcK_Block_GetTransaction(BtcK_Block const* self, std::size_t idx) -> BtcK_Transaction*
+auto BtcK_Block_GetTransaction(BtcK_Block const* self, std::size_t idx)
+  -> BtcK_Transaction*
 {
   return BtcK_Transaction::New(self->block.vtx[idx]);
 }
@@ -83,14 +83,12 @@ auto BtcK_Block_AsBytes(BtcK_Block const* /*self*/, std::size_t* /*len*/)
 }
 
 void BtcK_BlockHash_Init(
-  struct BtcK_BlockHash* self, void const* raw, std::size_t len
-)
+  struct BtcK_BlockHash* self, void const* raw, std::size_t len)
 {
   assert(raw != nullptr);
   assert(len == BtcK_BlockHash_SIZE);
   std::copy_n(
-    reinterpret_cast<std::uint8_t const*>(raw), sizeof(self->data), self->data
-  );
+    reinterpret_cast<std::uint8_t const*>(raw), sizeof(self->data), self->data);
 }
 
 }  // extern "C"

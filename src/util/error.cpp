@@ -4,11 +4,11 @@
 
 #include "error.hpp"
 
+#include <btck/btck.h>
+
 #include <exception>
 #include <new>
 #include <system_error>
-
-#include <btck/btck.h>
 
 namespace util {
 

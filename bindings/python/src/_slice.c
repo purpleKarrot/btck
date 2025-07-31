@@ -6,8 +6,7 @@
 
 #include <stddef.h>
 
-struct Self
-{
+struct Self {
   PyObject_HEAD
   PyObject* seq;
   Py_ssize_t start;
@@ -97,6 +96,5 @@ PyObject* Slice_subscript(PyObject* self, PyObject* arg)
 
   return PyErr_Format(
     PyExc_TypeError, "indices must be integers or slices, not %.200s",
-    Py_TYPE(arg)->tp_name
-  );
+    Py_TYPE(arg)->tp_name);
 }

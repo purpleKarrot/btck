@@ -4,10 +4,10 @@
 
 #include "ScriptPubkey.h"
 
+#include <btck/btck.h>
+
 #include <stddef.h>
 #include <stdint.h>
-
-#include <btck/btck.h>
 
 static jfieldID get_native_handle_field(JNIEnv* env, jobject obj)
 {

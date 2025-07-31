@@ -4,16 +4,15 @@
 
 #include "transaction_output.h"
 
-#include <stddef.h>
-
 #include <btck/btck.h>
+
+#include <stddef.h>
 
 #include "script_pubkey.h"
 
 struct BtcK_TransactionOutput;
 
-struct Self
-{
+struct Self {
   PyObject_HEAD
   struct BtcK_TransactionOutput* impl;
 };
@@ -23,6 +22,12 @@ static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
 static PyObject* get_amount(struct Self const* self, void* closure);
 static PyObject* get_script_pubkey(struct Self const* self, void* closure);
 
+static PyGetSetDef getset[] = {
+  {"amount", (getter)get_amount, NULL, "", NULL},
+  {"script_pubkey", (getter)get_script_pubkey, NULL, "", NULL},
+  {},
+};
+
 PyTypeObject TransactionOutput_Type = {
   PyVarObject_HEAD_INIT(NULL, 0)
   .tp_name = "btck.TransactionOutput",
@@ -31,11 +36,7 @@ PyTypeObject TransactionOutput_Type = {
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
-  .tp_getset = (PyGetSetDef[]){
-    {"amount", (getter)get_amount, NULL, "", NULL},
-    {"script_pubkey", (getter)get_script_pubkey, NULL, "", NULL},
-    {},
-  },
+  .tp_getset = getset,
 };
 
 static void dealloc(struct Self* self)
@@ -45,22 +46,20 @@ static void dealloc(struct Self* self)
 }
 
 static PyObject* new(
-  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs
-)
+  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs)
 {
   static char* kwlist[] = {"amount", "script_pubkey", NULL};
 
   long long amount;
   PyObject* script_pubkey = NULL;
   if (!PyArg_ParseTupleAndKeywords(
-        args, kwargs, "LO!", kwlist, &amount, ScriptPubkey_Type, &script_pubkey
-      )) {
+        args, kwargs, "LO!", kwlist, &amount, ScriptPubkey_Type,
+        &script_pubkey)) {
     return NULL;
   }
 
   return TransactionOutput_New(BtcK_TransactionOutput_New(
-    amount, ScriptPubkey_GetImpl(script_pubkey), NULL
-  ));
+    amount, ScriptPubkey_GetImpl(script_pubkey), NULL));
 }
 
 static PyObject* get_amount(struct Self const* self, void* Py_UNUSED(closure))
@@ -69,12 +68,10 @@ static PyObject* get_amount(struct Self const* self, void* Py_UNUSED(closure))
 }
 
 static PyObject* get_script_pubkey(
-  struct Self const* self, void* Py_UNUSED(closure)
-)
+  struct Self const* self, void* Py_UNUSED(closure))
 {
   return ScriptPubkey_New(
-    BtcK_TransactionOutput_GetScriptPubkey(self->impl, NULL)
-  );
+    BtcK_TransactionOutput_GetScriptPubkey(self->impl, NULL));
 }
 
 PyObject* TransactionOutput_New(struct BtcK_TransactionOutput* txout)

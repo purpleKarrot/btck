@@ -4,15 +4,14 @@
 
 #pragma once
 
+#include <script/script.h>
+
 #include <cstdint>
 #include <span>
 
-#include <script/script.h>
-
 #include "util/ref_counted.hpp"
 
-struct BtcK_ScriptPubkey : util::RefCounted<BtcK_ScriptPubkey>
-{
+struct BtcK_ScriptPubkey : util::RefCounted<BtcK_ScriptPubkey> {
   BtcK_ScriptPubkey(std::span<std::uint8_t const> raw)
     : script(raw.begin(), raw.end())
   {}

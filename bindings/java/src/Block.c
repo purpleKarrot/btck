@@ -4,11 +4,11 @@
 
 #include "Block.h"
 
+#include <btck/btck.h>
+
 #include <jni.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#include <btck/btck.h>
 
 static jfieldID get_impl_field(JNIEnv* env, jobject obj)
 {

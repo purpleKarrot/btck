@@ -4,11 +4,11 @@
 
 #include "Transaction.h"
 
+#include <btck/btck.h>
+
 #include <jni.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-#include <btck/btck.h>
 
 static jfieldID get_impl_field(JNIEnv* env, jobject obj)
 {
@@ -64,7 +64,8 @@ jobject Java_Transaction_get(JNIEnv* env, jobject self, jint idx)
     return NULL;
   }
 
-  struct BtcK_TransactionOutput* out = BtcK_Transaction_GetOutput(ptr, (size_t)idx);
+  struct BtcK_TransactionOutput* out =
+    BtcK_Transaction_GetOutput(ptr, (size_t)idx);
   if (out == NULL) {
     return NULL;
   }

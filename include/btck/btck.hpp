@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <btck/btck.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -16,24 +18,19 @@
 #include <system_error>
 #include <utility>
 
-#include <btck/btck.h>
-
 /******************************************************************************/
 // MARK: Range Mixin
 
 namespace btck::detail {
 
-template <typename T>
-struct arrow_proxy {
+template <typename T> struct arrow_proxy {
   auto operator->() -> T* { return &r; }
   T r;
 };
 
-template <typename T>
-arrow_proxy(T) -> arrow_proxy<T>;
+template <typename T> arrow_proxy(T) -> arrow_proxy<T>;
 
-template <typename Range>
-class range_iterator
+template <typename Range> class range_iterator
 {
 public:
   range_iterator() = default;
@@ -135,16 +132,14 @@ private:
   }
 
   friend auto operator<=>(
-    range_iterator const& left, range_iterator const& right
-  )
+    range_iterator const& left, range_iterator const& right)
   {
     assert(left.range_ == right.range_);
     return left.idx_ <=> right.idx_;
   }
 
   friend auto operator==(
-    range_iterator const& left, range_iterator const& right
-  ) -> bool
+    range_iterator const& left, range_iterator const& right) -> bool
   {
     assert(left.range_ == right.range_);
     return left.idx_ == right.idx_;
@@ -154,8 +149,7 @@ private:
   std::size_t idx_ = 0;
 };
 
-template <class Derived>
-class range
+template <class Derived> class range
 {
 public:
   using iterator = range_iterator<Derived>;
@@ -239,8 +233,7 @@ constexpr auto const owned = owned_tag{};
 
 struct get_impl_;
 
-template <typename T, T* (*Retain)(T*), void (*Release)(T*)>
-class arc
+template <typename T, T* (*Retain)(T*), void (*Release)(T*)> class arc
 {
 protected:
   using base = arc;
@@ -327,8 +320,7 @@ constexpr auto const get_impl = get_impl_{};
 
 namespace btck::detail {
 
-template <typename Smart>
-class out_ptr
+template <typename Smart> class out_ptr
 {
 public:
   using element_type = typename Smart::element_type;
@@ -354,37 +346,32 @@ private:
 namespace btck {
 namespace detail {
 
-template <typename E>
-struct is_flag_enum : std::false_type {};
+template <typename E> struct is_flag_enum : std::false_type {};
 
 template <typename E>
 concept flag_enum = is_flag_enum<E>::value;
 
 }  // namespace detail
 
-template <detail::flag_enum E>
-constexpr auto operator|(E left, E right)
+template <detail::flag_enum E> constexpr auto operator|(E left, E right)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(left) | static_cast<U>(right));
 }
 
-template <detail::flag_enum E>
-constexpr auto operator&(E left, E right)
+template <detail::flag_enum E> constexpr auto operator&(E left, E right)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(left) & static_cast<U>(right));
 }
 
-template <detail::flag_enum E>
-constexpr auto operator^(E left, E right)
+template <detail::flag_enum E> constexpr auto operator^(E left, E right)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(static_cast<U>(left) ^ static_cast<U>(right));
 }
 
-template <detail::flag_enum E>
-constexpr auto operator~(E e)
+template <detail::flag_enum E> constexpr auto operator~(E e)
 {
   using U = std::underlying_type_t<E>;
   return static_cast<E>(~static_cast<U>(e));
@@ -544,9 +531,7 @@ namespace btck {
 
 class ScriptPubkey
   : public detail::arc<
-      BtcK_ScriptPubkey,
-      BtcK_ScriptPubkey_Retain,
-      BtcK_ScriptPubkey_Release>
+      BtcK_ScriptPubkey, BtcK_ScriptPubkey_Retain, BtcK_ScriptPubkey_Release>
 {
 public:
   using base::base;
@@ -554,8 +539,7 @@ public:
   ScriptPubkey(std::span<std::byte const> raw)
     : base{
         detail::invoke(BtcK_ScriptPubkey_New, raw.data(), raw.size()),
-        detail::owned
-      }
+        detail::owned}
   {}
 
 private:
@@ -582,8 +566,7 @@ namespace btck {
 
 class TransactionOutput
   : public detail::arc<
-      BtcK_TransactionOutput,
-      BtcK_TransactionOutput_Retain,
+      BtcK_TransactionOutput, BtcK_TransactionOutput_Retain,
       BtcK_TransactionOutput_Release>
 {
 public:
@@ -592,10 +575,8 @@ public:
   TransactionOutput(std::int64_t amount, ScriptPubkey const& script_pubkey)
     : base{
         detail::invoke(
-          BtcK_TransactionOutput_New, amount, detail::get_impl(script_pubkey)
-        ),
-        detail::owned
-      }
+          BtcK_TransactionOutput_New, amount, detail::get_impl(script_pubkey)),
+        detail::owned}
   {}
 
   [[nodiscard]] auto amount() const -> std::int64_t
@@ -607,8 +588,7 @@ public:
   {
     return {
       detail::invoke(BtcK_TransactionOutput_GetScriptPubkey, this->impl()),
-      detail::owned
-    };
+      detail::owned};
   }
 };
 
@@ -620,8 +600,8 @@ public:
 namespace btck {
 
 class Transaction
-  : public detail::
-      arc<BtcK_Transaction, BtcK_Transaction_Retain, BtcK_Transaction_Release>
+  : public detail::arc<
+      BtcK_Transaction, BtcK_Transaction_Retain, BtcK_Transaction_Release>
   , public detail::range<Transaction const>
 {
 public:
@@ -632,8 +612,7 @@ public:
   Transaction(std::span<std::byte const> raw)
     : base{
         detail::invoke(BtcK_Transaction_New, raw.data(), raw.size()),
-        detail::owned
-      }
+        detail::owned}
   {}
 
   [[nodiscard]] auto size() const -> std::size_t
@@ -671,13 +650,9 @@ namespace detail {
 
 struct verify_fn {
   auto operator()(
-    ScriptPubkey const& script_pubkey,
-    std::int64_t amount,
-    Transaction const& tx_to,
-    std::span<TransactionOutput const> spent_outputs,
-    unsigned int input_index,
-    verification_flags flags
-  ) const -> bool
+    ScriptPubkey const& script_pubkey, std::int64_t amount,
+    Transaction const& tx_to, std::span<TransactionOutput const> spent_outputs,
+    unsigned int input_index, verification_flags flags) const -> bool
   {
     return detail::invoke(
       BtcK_Verify, detail::get_impl(script_pubkey), amount,
@@ -685,8 +660,7 @@ struct verify_fn {
       (spent_outputs.empty() ? nullptr
                              : detail::get_impl(spent_outputs.data())),
       spent_outputs.size(), input_index,
-      static_cast<BtcK_VerificationFlags>(flags)
-    );
+      static_cast<BtcK_VerificationFlags>(flags));
   }
 };
 
@@ -747,8 +721,7 @@ public:
 
   Block(std::span<std::byte const> raw)
     : base{
-        detail::invoke(BtcK_Block_New, raw.data(), raw.size()), detail::owned
-      }
+        detail::invoke(BtcK_Block_New, raw.data(), raw.size()), detail::owned}
   {}
 
   [[nodiscard]] auto hash() const -> BlockHash
@@ -824,8 +797,7 @@ public:
   Logger(Log log, LogFlags flags);
 };
 
-template <typename T>
-class KernelNotifications
+template <typename T> class KernelNotifications
 {
 public:
   KernelNotifications();
@@ -864,8 +836,7 @@ public:
   };
 
   Chain(
-    std::string_view data_dir, std::string_view blocks_dir, KwArgs kwargs = {}
-  );
+    std::string_view data_dir, std::string_view blocks_dir, KwArgs kwargs = {});
 
   // auto ImportBlocks(std::span<std::string const> paths) -> bool;
   // auto ProcessBlock(Block const& block, bool* new_block) -> bool;

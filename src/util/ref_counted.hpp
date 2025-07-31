@@ -8,12 +8,10 @@
 
 namespace util {
 
-template <typename T>
-class RefCounted
+template <typename T> class RefCounted
 {
 public:
-  template <typename... Args>
-  static auto New(Args&&... args) -> T*
+  template <typename... Args> static auto New(Args&&... args) -> T*
   {
     return new T{std::forward<Args>(args)...};
   }

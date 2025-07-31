@@ -2,14 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <btck/btck.h>
+
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <btck/btck.h>
-
-struct PrintContext
-{
+struct PrintContext {
   char* buffer;
   size_t bufsz;
   int num;
@@ -30,8 +29,7 @@ static int print(struct PrintContext* ctx, char const* format, ...)
   return ctx->num += retval;
 }
 
-struct Entry
-{
+struct Entry {
   BtcK_VerificationFlags flag;
   char const* name;
 };
@@ -47,8 +45,7 @@ static struct Entry const flag_table[] = {
 };
 
 int BtcK_VerificationFlags_ToString(
-  BtcK_VerificationFlags flags, char* buf, size_t len
-)
+  BtcK_VerificationFlags flags, char* buf, size_t len)
 {
   if (flags == BtcK_VerificationFlags_ALL) {
     return snprintf(buf, len, "ALL");

@@ -4,17 +4,16 @@
 
 #pragma once
 
+#include <primitives/transaction.h>
+
 #include <cstddef>
 #include <span>
 #include <string>
 #include <vector>
 
-#include <primitives/transaction.h>
-
 #include "util/ref_counted.hpp"
 
-struct BtcK_Transaction : util::RefCounted<BtcK_Transaction>
-{
+struct BtcK_Transaction : util::RefCounted<BtcK_Transaction> {
   BtcK_Transaction(CTransactionRef arg);
   BtcK_Transaction(std::span<std::byte const> raw);
 

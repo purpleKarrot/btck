@@ -4,9 +4,9 @@
 
 #include "block.h"
 
-#include <stddef.h>
-
 #include <btck/btck.h>
+
+#include <stddef.h>
 
 #include "_slice.h"
 #include "block_hash.h"
@@ -14,8 +14,7 @@
 
 struct BtcK_Block;
 
-struct Self
-{
+struct Self {
   PyObject_HEAD
   struct BtcK_Block* impl;
 };
@@ -38,6 +37,12 @@ static PyMappingMethods transactions_as_mapping = {
   .mp_subscript = Slice_subscript,
 };
 
+static PyGetSetDef getset[] = {
+  {"hash", (getter)get_hash, NULL, "", NULL},
+  {"transactions", (getter)get_transactions_slice, NULL, "", NULL},
+  {},
+};
+
 PyTypeObject Block_Type = {
   PyVarObject_HEAD_INIT(NULL, 0)
   .tp_name = "btck.Block",
@@ -46,11 +51,7 @@ PyTypeObject Block_Type = {
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
-  .tp_getset = (PyGetSetDef[]){
-    {"hash", (getter)get_hash, NULL, "", NULL},
-    {"transactions", (getter)get_transactions_slice, NULL, "", NULL},
-    {},
-  },
+  .tp_getset = getset,
 };
 
 PyTypeObject Block_TransactionsSlice_Type = {
@@ -70,8 +71,7 @@ static void dealloc(struct Self* self)
 }
 
 static PyObject* new(
-  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs
-)
+  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs)
 {
   static char* kwlist[] = {"", NULL};
 
@@ -91,8 +91,7 @@ static PyObject* get_hash(struct Self const* self, void* Py_UNUSED(closure))
 }
 
 static PyObject* get_transactions_slice(
-  struct Self const* self, void* Py_UNUSED(closure)
-)
+  struct Self const* self, void* Py_UNUSED(closure))
 {
   struct Self* slice = PyObject_New(struct Self, &Block_TransactionsSlice_Type);
   if (slice == NULL) {

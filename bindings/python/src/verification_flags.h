@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <Python.h>
-
 #include <btck/btck.h>
+
+#include <Python.h>
 
 extern PyTypeObject VerificationFlags_Type;
 

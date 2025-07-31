@@ -4,10 +4,10 @@
 
 #include "transaction_output.hpp"
 
+#include <btck/btck.h>
+
 #include <cstdint>
 #include <span>
-
-#include <btck/btck.h>
 
 #include "primitives/transaction.h"
 #include "script_pubkey.hpp"
@@ -18,8 +18,8 @@ struct BtcK_Error;
 extern "C" {
 
 auto BtcK_TransactionOutput_New(
-  int64_t amount, BtcK_ScriptPubkey const* script_pubkey, BtcK_Error** err
-) -> BtcK_TransactionOutput*
+  int64_t amount, BtcK_ScriptPubkey const* script_pubkey, BtcK_Error** err)
+  -> BtcK_TransactionOutput*
 {
   return util::WrapFn(err, [=] {
     return new BtcK_TransactionOutput{amount, script_pubkey->script};
@@ -44,12 +44,10 @@ auto BtcK_TransactionOutput_GetAmount(BtcK_TransactionOutput const* self)
 }
 
 auto BtcK_TransactionOutput_GetScriptPubkey(
-  BtcK_TransactionOutput const* self, BtcK_Error** err
-) -> BtcK_ScriptPubkey*
+  BtcK_TransactionOutput const* self, BtcK_Error** err) -> BtcK_ScriptPubkey*
 {
-  return util::WrapFn(err, [=] {
-    return new BtcK_ScriptPubkey{self->tx_out.scriptPubKey};
-  });
+  return util::WrapFn(
+    err, [=] { return new BtcK_ScriptPubkey{self->tx_out.scriptPubKey}; });
 }
 
 }  // extern "C"

@@ -90,6 +90,11 @@ static int exec(PyObject* module)
   return 0;
 }
 
+static PyModuleDef_Slot slots[] = {
+  {Py_mod_exec, exec},
+  {},
+};
+
 static PyModuleDef module = {
   .m_base = PyModuleDef_HEAD_INIT,
   .m_name = "btck",
@@ -104,10 +109,7 @@ static PyModuleDef module = {
   //     },
   //     {},
   //   },
-  .m_slots = (PyModuleDef_Slot[]){
-    {Py_mod_exec, exec},
-    {},
-  },
+  .m_slots = slots,
 };
 
 PyMODINIT_FUNC PyInit_btck(void);

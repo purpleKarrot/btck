@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 // include after standard headers
-#include <cmocka.h>
-
 #include <btck/btck.h>
+
+#include <cmocka.h>
 
 static void test_transaction(void** state)
 {
@@ -45,11 +45,13 @@ static void test_transaction(void** state)
 
   assert_int_equal(BtcK_Transaction_NumOutputs(transaction), 2);
 
-  struct BtcK_TransactionOutput* txout1 = BtcK_Transaction_GetOutput(transaction, 0);
+  struct BtcK_TransactionOutput* txout1 =
+    BtcK_Transaction_GetOutput(transaction, 0);
   assert_int_equal(BtcK_TransactionOutput_GetAmount(txout1), 20737411);
   BtcK_TransactionOutput_Release(txout1);
 
-  struct BtcK_TransactionOutput* txout2 = BtcK_Transaction_GetOutput(transaction, 1);
+  struct BtcK_TransactionOutput* txout2 =
+    BtcK_Transaction_GetOutput(transaction, 1);
   assert_int_equal(BtcK_TransactionOutput_GetAmount(txout2), 42130042);
   BtcK_TransactionOutput_Release(txout1);
 

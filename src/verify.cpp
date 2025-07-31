@@ -2,6 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <btck/btck.h>
+#include <script/interpreter.h>
+
+#include <btck/btck.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <ranges>
@@ -9,10 +13,6 @@
 #include <system_error>
 #include <utility>
 #include <vector>
-
-#include <btck/btck.h>
-#include <btck/btck.hpp>
-#include <script/interpreter.h>
 
 #include "primitives/transaction.h"
 #include "script_pubkey.hpp"
@@ -25,13 +25,9 @@ class CScript;
 namespace {
 
 auto verify(
-  CScript const& script_pubkey,
-  std::int64_t const amount,
-  CTransaction const& tx,
-  std::vector<CTxOut> spent_outputs,
-  unsigned int const input_index,
-  BtcK_VerificationFlags flags
-)
+  CScript const& script_pubkey, std::int64_t const amount,
+  CTransaction const& tx, std::vector<CTxOut> spent_outputs,
+  unsigned int const input_index, BtcK_VerificationFlags flags)
 {
   if ((flags & ~BtcK_VerificationFlags_ALL) != 0) {
     throw std::system_error(btck::verification_error::invalid_flags);
@@ -44,8 +40,7 @@ auto verify(
 
   if ((cleanstack && !p2sh && !witness) || (witness && !p2sh)) {
     throw std::system_error(
-      btck::verification_error::invalid_flags_combination
-    );
+      btck::verification_error::invalid_flags_combination);
   }
 
   if (taproot && spent_outputs.empty()) {
@@ -70,24 +65,18 @@ auto verify(
     tx.vin[input_index].scriptSig, script_pubkey,
     &tx.vin[input_index].scriptWitness, flags,
     TransactionSignatureChecker(
-      &tx, input_index, amount, txdata, MissingDataBehavior::FAIL
-    ),
-    nullptr
-  );
+      &tx, input_index, amount, txdata, MissingDataBehavior::FAIL),
+    nullptr);
 }
 
 }  // namespace
 
 auto BtcK_Verify(
-  struct BtcK_ScriptPubkey const* script_pubkey,
-  int64_t amount,
+  struct BtcK_ScriptPubkey const* script_pubkey, int64_t amount,
   struct BtcK_Transaction const* tx,
   struct BtcK_TransactionOutput const* const* spent_outputs,
-  std::size_t spent_outputs_len,
-  unsigned int input_index,
-  BtcK_VerificationFlags flags,
-  struct BtcK_Error** err
-) -> bool
+  std::size_t spent_outputs_len, unsigned int input_index,
+  BtcK_VerificationFlags flags, struct BtcK_Error** err) -> bool
 {
   return util::WrapFn(err, [=] {
     auto const spent_outputs_view =
@@ -96,7 +85,6 @@ auto BtcK_Verify(
     return verify(
       script_pubkey->script, amount, *tx->transaction,
       std::vector(spent_outputs_view.begin(), spent_outputs_view.end()),
-      input_index, flags
-    );
+      input_index, flags);
   });
 }

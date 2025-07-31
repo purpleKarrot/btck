@@ -2,12 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <gtest/gtest.h>
+
+#include <btck/btck.hpp>
 #include <cstdint>
 #include <span>
 #include <string>
-
-#include <btck/btck.hpp>
-#include <gtest/gtest.h>
 
 TEST(Transaction, Transaction)
 {
@@ -51,6 +51,5 @@ TEST(Transaction, Transaction)
     "    CTxOut(nValue=0.20737411, "
     "scriptPubKey=76a914fc25d6d5c94003bf5b0c7b64)\n"
     "    CTxOut(nValue=0.42130042, "
-    "scriptPubKey=76a914fbed3d9b11183209a57999d5)\n"
-  );
+    "scriptPubKey=76a914fbed3d9b11183209a57999d5)\n");
 }

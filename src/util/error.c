@@ -2,13 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <btck/btck.h>
+
 #include <stdlib.h>
 #include <string.h>
 
-#include <btck/btck.h>
-
-struct BtcK_Error
-{
+struct BtcK_Error {
   int code;
   char* domain;
   char* message;
@@ -21,8 +20,7 @@ static struct BtcK_Error OOM_ERROR = {
 };
 
 struct BtcK_Error* BtcK_Error_New(
-  char const* domain, int code, char const* message
-)
+  char const* domain, int code, char const* message)
 {
   struct BtcK_Error* err = malloc(sizeof(struct BtcK_Error));
   if (err == NULL) {

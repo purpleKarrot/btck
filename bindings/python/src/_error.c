@@ -4,9 +4,9 @@
 
 #include "_error.h"
 
-#include <stddef.h>
-
 #include <btck/btck.h>
+
+#include <stddef.h>
 
 PyObject* SetError(struct BtcK_Error* error)
 {

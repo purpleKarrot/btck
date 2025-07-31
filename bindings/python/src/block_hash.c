@@ -4,13 +4,12 @@
 
 #include "block_hash.h"
 
+#include <btck/btck.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <btck/btck.h>
-
-struct Self
-{
+struct Self {
   PyObject_HEAD
   struct BtcK_BlockHash impl;
 };
@@ -19,6 +18,15 @@ static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
 static int getbuffer(struct Self const* self, Py_buffer* view, int flags);
 static PyObject* bytes(struct Self const* self, PyObject* ignored);
 
+static PyBufferProcs as_buffer = {
+  .bf_getbuffer = (getbufferproc)getbuffer,
+};
+
+static PyMethodDef methods[] = {
+  {"__bytes__", (PyCFunction)bytes, METH_NOARGS, ""},
+  {},
+};
+
 PyTypeObject BlockHash_Type = {
   PyVarObject_HEAD_INIT(NULL, 0)
   .tp_name = "btck.BlockHash",
@@ -26,19 +34,12 @@ PyTypeObject BlockHash_Type = {
   .tp_basicsize = sizeof(struct Self),
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
-  .tp_as_buffer =
-    &(PyBufferProcs){
-      .bf_getbuffer = (getbufferproc)getbuffer,
-    },
-  .tp_methods = (PyMethodDef[]){
-    {"__bytes__", (PyCFunction)bytes, METH_NOARGS, ""},
-    {},
-  },
+  .tp_as_buffer = &as_buffer,
+  .tp_methods = methods,
 };
 
 static PyObject* new(
-  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs
-)
+  PyTypeObject* Py_UNUSED(type), PyObject* args, PyObject* kwargs)
 {
   static char* kwlist[] = {"raw", NULL};
 
@@ -61,15 +62,13 @@ static int getbuffer(struct Self const* self, Py_buffer* view, int flags)
 {
   return PyBuffer_FillInfo(
     view, (PyObject*)self, (void*)self->impl.data, BtcK_BlockHash_SIZE, true,
-    flags
-  );
+    flags);
 }
 
 static PyObject* bytes(struct Self const* self, PyObject* Py_UNUSED(ignored))
 {
   return PyBytes_FromStringAndSize(
-    (char const*)self->impl.data, BtcK_BlockHash_SIZE
-  );
+    (char const*)self->impl.data, BtcK_BlockHash_SIZE);
 }
 
 PyObject* BlockHash_New(struct BtcK_BlockHash const* hash)

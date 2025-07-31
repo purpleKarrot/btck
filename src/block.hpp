@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include <primitives/block.h>
+
 #include <cstddef>
 #include <span>
-
-#include <primitives/block.h>
 
 #include "util/ref_counted.hpp"
 
@@ -19,8 +19,7 @@ class BlockManager;
 
 class CBlockIndex;
 
-struct BtcK_Block : util::RefCounted<BtcK_Block>
-{
+struct BtcK_Block : util::RefCounted<BtcK_Block> {
   BtcK_Block(std::span<std::byte const> raw);
   BtcK_Block(CBlockIndex const& bi, node::BlockManager const& bm);
 
