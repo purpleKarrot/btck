@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <iterator>
 #include <memory>
@@ -12,6 +13,7 @@
 #include <span>
 #include <stdexcept>
 #include <string_view>
+#include <system_error>
 #include <utility>
 
 #include <btck/btck.h>
@@ -347,47 +349,6 @@ private:
 }  // namespace btck::detail
 
 /******************************************************************************/
-
-namespace btck::detail {
-
-inline auto as_bytes(void const* data, std::size_t len)
-{
-  return std::span{reinterpret_cast<std::byte const*>(data), len};
-}
-
-struct error_deleter {
-  void operator()(BtcK_Error* error) const { BtcK_Error_Free(error); }
-};
-
-struct error : std::unique_ptr<BtcK_Error, error_deleter> {
-  [[nodiscard]] auto code() const { return BtcK_Error_Code(get()); }
-  [[nodiscard]] auto domain() const { return BtcK_Error_Domain(get()); }
-  [[nodiscard]] auto message() const { return BtcK_Error_Message(get()); }
-};
-
-[[noreturn]] inline void translate_error(error const& err)
-{
-  using namespace std::literals;
-  if (err.domain() == "Memory"sv) {
-    throw std::bad_alloc();
-  }
-  throw std::runtime_error{err.message()};
-}
-
-template <typename Function, typename... Args>
-auto invoke(Function function, Args... args)
-{
-  auto err = error{};
-  auto const result = function(args..., out_ptr{err});
-  if (err != nullptr) [[unlikely]] {
-    translate_error(err);
-  }
-  return result;
-}
-
-}  // namespace btck::detail
-
-/******************************************************************************/
 // MARK: Flag Operators
 
 namespace btck {
@@ -524,6 +485,57 @@ inline auto to_string(verification_flags flags)
 
 template <>
 struct btck::detail::is_flag_enum<btck::verification_flags> : std::true_type {};
+
+/******************************************************************************/
+
+namespace btck::detail {
+
+inline auto as_bytes(void const* data, std::size_t len)
+{
+  return std::span{reinterpret_cast<std::byte const*>(data), len};
+}
+
+struct error_deleter {
+  void operator()(BtcK_Error* error) const { BtcK_Error_Free(error); }
+};
+
+struct error : std::unique_ptr<BtcK_Error, error_deleter> {
+  [[nodiscard]] auto code() const { return BtcK_Error_Code(get()); }
+  [[nodiscard]] auto domain() const { return BtcK_Error_Domain(get()); }
+  [[nodiscard]] auto message() const { return BtcK_Error_Message(get()); }
+};
+
+inline void throw_domain(error const& err, std::error_category const& domain)
+{
+  if (std::strcmp(err.domain(), domain.name()) == 0) {
+    throw std::system_error(err.code(), domain);
+  }
+}
+
+[[noreturn]] inline void translate_error(error const& err)
+{
+  using namespace std::literals;
+  if (err.domain() == "Memory"sv) {
+    throw std::bad_alloc();
+  }
+  throw_domain(err, std::generic_category());  // TODO: Is this portable?
+  throw_domain(err, std::system_category());   // TODO: Is this portable?
+  throw_domain(err, detail::verification_error_category);
+  throw std::runtime_error{err.message()};
+}
+
+template <typename Function, typename... Args>
+auto invoke(Function function, Args... args)
+{
+  auto err = error{};
+  auto const result = function(args..., out_ptr{err});
+  if (err != nullptr) [[unlikely]] {
+    translate_error(err);
+  }
+  return result;
+}
+
+}  // namespace btck::detail
 
 /******************************************************************************/
 // MARK: ScriptPubkey
