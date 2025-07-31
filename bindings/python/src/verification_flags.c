@@ -4,6 +4,8 @@
 
 #include "verification_flags.h"
 
+#include <btck/btck.h>
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -125,6 +127,10 @@ PyObject* VerificationFlags_New(BtcK_VerificationFlags value)
 
 BtcK_VerificationFlags VerificationFlags_GetImpl(PyObject* object)
 {
+  if (object == NULL) {
+    return BtcK_VerificationFlags_NONE;
+  }
+
   assert(PyObject_TypeCheck(object, &VerificationFlags_Type));
   return ((struct Self*)object)->impl;
 }

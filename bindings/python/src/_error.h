@@ -6,4 +6,5 @@
 
 struct BtcK_Error;
 
+extern PyObject* VerificationError;
 PyObject* SetError(struct BtcK_Error* error);

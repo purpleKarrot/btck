@@ -57,8 +57,8 @@ auto BtcK_Chain_GetBlock(BtcK_Chain const* self, std::size_t idx) -> BtcK_Block*
   return BtcK_Block::New(*bi, self->chainstate_manager.m_blockman);
 }
 
-auto BtcK_Chain_Find(BtcK_Chain const* self, BtcK_BlockHash const* block_hash)
-  -> std::ptrdiff_t
+auto BtcK_Chain_FindBlock(
+  BtcK_Chain const* self, BtcK_BlockHash const* block_hash) -> std::ptrdiff_t
 {
   auto const hash = uint256{std::span{block_hash->data}};
   auto const* bi = self->chainstate_manager.m_blockman.LookupBlockIndex(hash);

@@ -5,6 +5,7 @@
 from __future__ import annotations
 import typing
 
+
 @typing.final
 class _Slice[T]:
     def __len__(self) -> int: ...
@@ -74,3 +75,19 @@ class TransactionOutput:
     def __init__(self,  amount: int, script_pubkey: ScriptPubkey): ...
     amount: int
     script_pubkey: ScriptPubkey
+
+
+@typing.final
+class VerificationError(ValueError):
+    code: int
+    message: str
+
+
+def verify_script(
+    script_pubkey: ScriptPubkey,
+    amount: int,
+    tx_to: Transaction,
+    spent_outputs: typing.Sequence[TransactionOutput] | None = None,
+    input_index: int = 0,
+    flags: VerificationFlags = VerificationFlags.NONE,
+) -> bool: ...

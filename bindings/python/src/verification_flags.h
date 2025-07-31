@@ -12,4 +12,4 @@ extern PyTypeObject VerificationFlags_Type;
 
 void VerificationFlags_Init(void);
 PyObject* VerificationFlags_New(BtcK_VerificationFlags value);
-int VerificationFlags_Convert(PyObject* object, BtcK_VerificationFlags* out);
+BtcK_VerificationFlags VerificationFlags_GetImpl(PyObject* object);

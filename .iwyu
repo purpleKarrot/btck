@@ -17,6 +17,7 @@
   { "include": ["<pybuffer.h>", "private", "<Python.h>", "public"] },
   { "include": ["<pyerrors.h>", "private", "<Python.h>", "public"] },
   { "include": ["<pymacro.h>", "private", "<Python.h>", "public"] },
+  { "include": ["<pymem.h>", "private", "<Python.h>", "public"] },
   { "include": ["<pyport.h>", "private", "<Python.h>", "public"] },
   { "include": ["<pytypedefs.h>", "private", "<Python.h>", "public"] },
   { "include": ["<sliceobject.h>", "private", "<Python.h>", "public"] },

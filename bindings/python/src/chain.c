@@ -10,6 +10,7 @@
 
 #include "_slice.h"
 #include "block.h"
+#include "block_hash.h"
 
 struct Self {
   PyObject_HEAD
@@ -22,11 +23,18 @@ static PyObject* get_blocks_slice(struct Self const* self, void* closure);
 
 static Py_ssize_t num_blocks(struct Self const* self);
 static PyObject* get_block(struct Self* self, Py_ssize_t idx);
+static PyObject* find_block(struct Self const* self, PyObject* args);
+static PyObject* block_index(struct Self const* self, PyObject* args);
 
 static PyGetSetDef getset[] = {
   {"blocks", (getter)get_blocks_slice, NULL, "", NULL},
   {},
 };
+
+static PyMethodDef blocks_methods[] = {
+  {"index", (PyCFunction)block_index, METH_VARARGS, ""},
+  {"find", (PyCFunction)find_block, METH_VARARGS, ""},
+  {}};
 
 static PySequenceMethods blocks_as_sequence = {
   .sq_length = (lenfunc)num_blocks,
@@ -55,6 +63,7 @@ PyTypeObject Chain_BlocksSlice_Type = {
   .tp_basicsize = sizeof(struct Self),
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_methods = blocks_methods,
   .tp_as_sequence = &blocks_as_sequence,
   .tp_as_mapping = &blocks_as_mapping,
 };
@@ -128,8 +137,32 @@ static PyObject* get_block(struct Self* self, Py_ssize_t idx)
   return Block_New(BtcK_Chain_GetBlock(self->impl, idx));
 }
 
-//   BlockIndex GetBlockIndexByHash(kernel_BlockHash * block_hash) const noexcept
-//   {
-//     return kernel_get_block_index_from_hash(
-//         m_context.m_context.get(), m_chainman, block_hash);
-//   }
+static PyObject* block_index(struct Self const* self, PyObject* args)
+{
+  PyObject* block_hash = NULL;
+  if (!PyArg_ParseTuple(args, "O!", &BlockHash_Type, &block_hash)) {
+    return NULL;
+  }
+
+  ptrdiff_t const index =
+    BtcK_Chain_FindBlock(self->impl, BlockHash_GetImpl(block_hash));
+  if (index < 0) {
+    PyErr_SetString(PyExc_ValueError, "value not found in blocks");
+    return NULL;
+  }
+
+  return PyLong_FromSsize_t(index);
+}
+
+static PyObject* find_block(struct Self const* self, PyObject* args)
+{
+  PyObject* block_hash = NULL;
+  if (!PyArg_ParseTuple(args, "O!", &BlockHash_Type, &block_hash)) {
+    return NULL;
+  }
+
+  ptrdiff_t const index =
+    BtcK_Chain_FindBlock(self->impl, BlockHash_GetImpl(block_hash));
+
+  return PyLong_FromSsize_t(index);
+}

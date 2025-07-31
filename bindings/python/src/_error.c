@@ -7,11 +7,26 @@
 #include <btck/btck.h>
 
 #include <stddef.h>
+#include <string.h>
+
+PyObject* VerificationError = NULL;
 
 PyObject* SetError(struct BtcK_Error* error)
 {
-  // PyErr_SetNone(PyExc_MemoryError);
-  PyErr_SetString(PyExc_RuntimeError, BtcK_Error_Message(error));
+  int const code = BtcK_Error_Code(error);
+  char const* const domain = BtcK_Error_Domain(error);
+  char const* const message = BtcK_Error_Message(error);
+
+  if (strcmp(domain, "Memory") == 0) {
+    PyErr_SetNone(PyExc_MemoryError);
+  }
+  else if (strcmp(domain, "VerificationError") == 0) {
+    PyErr_SetString(VerificationError, message);
+  }
+  else {
+    PyErr_SetString(PyExc_RuntimeError, message);
+  }
+
   BtcK_Error_Free(error);
   return NULL;
 }

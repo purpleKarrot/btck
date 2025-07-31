@@ -11,3 +11,4 @@ struct BtcK_BlockHash;
 extern PyTypeObject BlockHash_Type;
 
 PyObject* BlockHash_New(struct BtcK_BlockHash const* hash);
+struct BtcK_BlockHash const* BlockHash_GetImpl(PyObject* object);

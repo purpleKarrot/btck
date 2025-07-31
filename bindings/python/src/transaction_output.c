@@ -6,6 +6,7 @@
 
 #include <btck/btck.h>
 
+#include <assert.h>
 #include <stddef.h>
 
 #include "script_pubkey.h"
@@ -83,4 +84,10 @@ PyObject* TransactionOutput_New(struct BtcK_TransactionOutput* txout)
   }
   self->impl = txout;
   return (PyObject*)self;
+}
+
+struct BtcK_TransactionOutput* TransactionOutput_GetImpl(PyObject* object)
+{
+  assert(PyObject_TypeCheck(object, &TransactionOutput_Type));
+  return ((struct Self*)object)->impl;
 }

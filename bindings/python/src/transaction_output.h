@@ -11,3 +11,4 @@ struct BtcK_TransactionOutput;
 extern PyTypeObject TransactionOutput_Type;
 
 PyObject* TransactionOutput_New(struct BtcK_TransactionOutput* txout);
+struct BtcK_TransactionOutput* TransactionOutput_GetImpl(PyObject* object);

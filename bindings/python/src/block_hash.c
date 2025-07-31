@@ -6,6 +6,7 @@
 
 #include <btck/btck.h>
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -80,4 +81,10 @@ PyObject* BlockHash_New(struct BtcK_BlockHash const* hash)
 
   self->impl = *hash;
   return (PyObject*)self;
+}
+
+struct BtcK_BlockHash const* BlockHash_GetImpl(PyObject* object)
+{
+  assert(PyObject_TypeCheck(object, &ScriptPubkey_Type));
+  return &((struct Self*)object)->impl;
 }
