@@ -94,7 +94,7 @@ static PyObject* verify_script(
   }
 
   struct BtcK_Error* error = NULL;
-  bool const result = BtcK_Verify(
+  int const result = BtcK_Verify(
     ScriptPubkey_GetImpl(script_pubkey), amount, Transaction_GetImpl(tx_to),
     spent_outputs.data, spent_outputs.size, input_index,
     VerificationFlags_GetImpl(flags), &error);

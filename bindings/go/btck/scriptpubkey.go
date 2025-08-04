@@ -34,7 +34,7 @@ func newScriptPubkeyFinalized(ptr *C.struct_BtcK_ScriptPubkey) *ScriptPubkey {
 }
 
 func (s *ScriptPubkey) Equal(other *ScriptPubkey) bool {
-	return bool(C.BtcK_ScriptPubkey_Equal(s.ptr, other.ptr))
+	return C.BtcK_ScriptPubkey_Equal(s.ptr, other.ptr) != 0
 }
 
 func (s *ScriptPubkey) Bytes() []byte {

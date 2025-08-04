@@ -118,6 +118,12 @@ if(BTCK_ENABLE_RUST)
   add_subdirectory(test/rust)
 endif()
 
+option(BTCK_ENABLE_SWIFT "Build Swift extension" OFF)
+if(BTCK_ENABLE_SWIFT)
+  add_subdirectory(bindings/swift)
+  add_subdirectory(test/swift)
+endif()
+
 option(BTCK_ENABLE_VALA "Enable Vala/Genie" OFF)
 if(BTCK_ENABLE_VALA)
   add_subdirectory(bindings/vala)
