@@ -40,7 +40,7 @@ PyTypeObject TransactionOutput_Type = {
 
 static void dealloc(struct Self* self)
 {
-  BtcK_TransactionOutput_Release(self->impl);
+  BtcK_TransactionOutput_Free(self->impl);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -77,7 +77,7 @@ PyObject* TransactionOutput_New(struct BtcK_TransactionOutput* txout)
 {
   struct Self* self = PyObject_New(struct Self, &TransactionOutput_Type);
   if (self == NULL) {
-    BtcK_TransactionOutput_Release(txout);
+    BtcK_TransactionOutput_Free(txout);
     return NULL;
   }
   self->impl = txout;

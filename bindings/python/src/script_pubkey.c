@@ -47,7 +47,7 @@ PyTypeObject ScriptPubkey_Type = {
 
 static void dealloc(struct Self* self)
 {
-  BtcK_ScriptPubkey_Release(self->impl);
+  BtcK_ScriptPubkey_Free(self->impl);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -99,7 +99,7 @@ PyObject* ScriptPubkey_New(struct BtcK_ScriptPubkey* script_pubkey)
 {
   struct Self* self = PyObject_New(struct Self, &ScriptPubkey_Type);
   if (self == NULL) {
-    BtcK_ScriptPubkey_Release(script_pubkey);
+    BtcK_ScriptPubkey_Free(script_pubkey);
     return NULL;
   }
   self->impl = script_pubkey;

@@ -55,12 +55,13 @@ auto BtcK_Transaction_New(
   });
 }
 
-auto BtcK_Transaction_Retain(BtcK_Transaction* self) -> BtcK_Transaction*
+auto BtcK_Transaction_Copy(
+  BtcK_Transaction const* self, struct BtcK_Error** err) -> BtcK_Transaction*
 {
-  return self->Retain();
+  return util::WrapFn(err, [=] { return self->Retain(); });
 }
 
-void BtcK_Transaction_Release(BtcK_Transaction* self)
+void BtcK_Transaction_Free(BtcK_Transaction* self)
 {
   self->Release();
 }

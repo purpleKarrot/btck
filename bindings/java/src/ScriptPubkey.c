@@ -35,7 +35,7 @@ JNIEXPORT void JNICALL Java_ScriptPubkey_close(JNIEnv* env, jobject self)
   jlong handle = (*env)->GetLongField(env, self, fid);
   struct BtcK_ScriptPubkey* ptr = (struct BtcK_ScriptPubkey*)(uintptr_t)handle;
   if (ptr) {
-    BtcK_ScriptPubkey_Release(ptr);
+    BtcK_ScriptPubkey_Free(ptr);
     (*env)->SetLongField(env, self, fid, (jlong)0);
   }
 }

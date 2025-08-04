@@ -25,7 +25,7 @@ impl Chain {
 
 impl Drop for Chain {
     fn drop(&mut self) {
-        unsafe { crate::ffi::BtcK_Chain_Release(self.ptr) }
+        unsafe { crate::ffi::BtcK_Chain_Free(self.ptr) }
     }
 }
 

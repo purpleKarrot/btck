@@ -47,12 +47,8 @@ public class ScriptPubkey {
         self.ptr = ptr!
     }
 
-    internal init(owned ptr: OpaquePointer) {
+    internal init(ptr: OpaquePointer) {
         self.ptr = ptr
-    }
-
-    internal init(unowned ptr: OpaquePointer) {
-        self.ptr = BtcK_ScriptPubkey_Retain(ptr)
     }
 
     public func asBytes() -> Data {
@@ -62,7 +58,7 @@ public class ScriptPubkey {
     }
 
     deinit {
-        BtcK_ScriptPubkey_Release(ptr)
+        BtcK_ScriptPubkey_Free(ptr)
     }
 }
 
@@ -80,12 +76,8 @@ public class TransactionOutput {
         self.ptr = ptr!
     }
 
-    internal init(owned ptr: OpaquePointer) {
+    internal init(ptr: OpaquePointer) {
         self.ptr = ptr
-    }
-
-    internal init(unowned ptr: OpaquePointer) {
-        self.ptr = BtcK_TransactionOutput_Retain(ptr)
     }
 
     public var amount: Int64 {
@@ -99,12 +91,12 @@ public class TransactionOutput {
             if let err {
                 throw BtcKError(err)
             }
-            return ScriptPubkey(owned: sp!)
+            return ScriptPubkey(ptr: sp!)
         }
     }
 
     deinit {
-        BtcK_TransactionOutput_Release(ptr)
+        BtcK_TransactionOutput_Free(ptr)
     }
 }
 
@@ -124,12 +116,8 @@ public class Transaction {
         self.ptr = ptr!
     }
 
-    internal init(owned ptr: OpaquePointer) {
+    internal init(ptr: OpaquePointer) {
         self.ptr = ptr
-    }
-
-    internal init(unowned ptr: OpaquePointer) {
-        self.ptr = BtcK_Transaction_Retain(ptr)
     }
 
     public func asBytes() -> Data {
@@ -139,7 +127,7 @@ public class Transaction {
     }
 
     deinit {
-        BtcK_Transaction_Release(ptr)
+        BtcK_Transaction_Free(ptr)
     }
 }
 
@@ -184,16 +172,12 @@ public class Block {
         self.ptr = ptr!
     }
 
-    internal init(owned ptr: OpaquePointer) {
+    internal init(ptr: OpaquePointer) {
         self.ptr = ptr
     }
 
-    internal init(unowned ptr: OpaquePointer) {
-        self.ptr = BtcK_Block_Retain(ptr)
-    }
-
     deinit {
-        BtcK_Block_Release(ptr)
+        BtcK_Block_Free(ptr)
     }
 
     public var data: Data {
@@ -212,16 +196,12 @@ public class Block {
 public class Chain {
     internal var ptr: OpaquePointer
 
-    internal init(owned ptr: OpaquePointer) {
+    internal init(ptr: OpaquePointer) {
         self.ptr = ptr
     }
 
-    internal init(unowned ptr: OpaquePointer) {
-        self.ptr = BtcK_Chain_Retain(ptr)
-    }
-
     deinit {
-        BtcK_Chain_Release(ptr)
+        BtcK_Chain_Free(ptr)
     }
 
     public func find(hash: BlockHash) -> Index {

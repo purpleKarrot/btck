@@ -38,7 +38,7 @@ void Java_Block_close(JNIEnv* env, jobject self)
   jlong handle = (*env)->GetLongField(env, self, fid);
   struct BtcK_Block* ptr = (struct BtcK_Block*)(uintptr_t)handle;
   if (ptr != NULL) {
-    BtcK_Block_Release(ptr);
+    BtcK_Block_Free(ptr);
     (*env)->SetLongField(env, self, fid, (jlong)0);
   }
 }

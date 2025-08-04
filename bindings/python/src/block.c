@@ -41,7 +41,7 @@ PyTypeObject Block_Type = {
 
 static void dealloc(struct Self* self)
 {
-  BtcK_Block_Release(self->impl);
+  BtcK_Block_Free(self->impl);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -82,7 +82,7 @@ PyObject* Block_New(struct BtcK_Block* block)
 {
   struct Self* self = PyObject_New(struct Self, &Block_Type);
   if (self == NULL) {
-    BtcK_Block_Release(block);
+    BtcK_Block_Free(block);
     return NULL;
   }
   self->impl = block;

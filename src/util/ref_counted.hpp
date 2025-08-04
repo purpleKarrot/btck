@@ -16,10 +16,10 @@ public:
     return new T{std::forward<Args>(args)...};
   }
 
-  auto Retain() -> T*
+  auto Retain() const -> T*
   {
     this->refcount.fetch_add(1, std::memory_order_relaxed);
-    return static_cast<T*>(this);
+    return const_cast<T*>(static_cast<T const*>(this));
   }
 
   void Release()
@@ -33,7 +33,7 @@ private:
   RefCounted() = default;
   friend T;
 
-  std::atomic<std::size_t> refcount = 1;
+  mutable std::atomic<std::size_t> refcount = 1;
 };
 
 }  // namespace util

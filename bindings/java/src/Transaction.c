@@ -38,7 +38,7 @@ void Java_Transaction_close(JNIEnv* env, jobject self)
   jlong handle = (*env)->GetLongField(env, self, fid);
   struct BtcK_Transaction* ptr = (struct BtcK_Transaction*)(uintptr_t)handle;
   if (ptr != NULL) {
-    BtcK_Transaction_Release(ptr);
+    BtcK_Transaction_Free(ptr);
     (*env)->SetLongField(env, self, fid, (jlong)0);
   }
 }

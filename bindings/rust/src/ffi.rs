@@ -51,9 +51,7 @@ extern "C" {
         len: usize,
         err: *mut *mut BtcK_Error,
     ) -> *mut BtcK_ScriptPubkey;
-    pub(crate) fn BtcK_ScriptPubkey_Retain(self_: *mut BtcK_ScriptPubkey)
-        -> *mut BtcK_ScriptPubkey;
-    pub(crate) fn BtcK_ScriptPubkey_Release(self_: *mut BtcK_ScriptPubkey);
+    pub(crate) fn BtcK_ScriptPubkey_Free(self_: *mut BtcK_ScriptPubkey);
     pub(crate) fn BtcK_ScriptPubkey_Equal(
         left: *const BtcK_ScriptPubkey,
         right: *const BtcK_ScriptPubkey,
@@ -70,10 +68,7 @@ extern "C" {
         script_pubkey: *const BtcK_ScriptPubkey,
         err: *mut *mut BtcK_Error,
     ) -> *mut BtcK_TransactionOutput;
-    pub(crate) fn BtcK_TransactionOutput_Retain(
-        self_: *mut BtcK_TransactionOutput,
-    ) -> *mut BtcK_TransactionOutput;
-    pub(crate) fn BtcK_TransactionOutput_Release(self_: *mut BtcK_TransactionOutput);
+    pub(crate) fn BtcK_TransactionOutput_Free(self_: *mut BtcK_TransactionOutput);
     pub(crate) fn BtcK_TransactionOutput_GetAmount(
         self_: *const BtcK_TransactionOutput,
     ) -> c_longlong;
@@ -89,8 +84,7 @@ extern "C" {
         len: usize,
         err: *mut *mut BtcK_Error,
     ) -> *mut BtcK_Transaction;
-    pub(crate) fn BtcK_Transaction_Retain(self_: *mut BtcK_Transaction) -> *mut BtcK_Transaction;
-    pub(crate) fn BtcK_Transaction_Release(self_: *mut BtcK_Transaction);
+    pub(crate) fn BtcK_Transaction_Free(self_: *mut BtcK_Transaction);
     pub(crate) fn BtcK_Transaction_CountOutputs(self_: *const BtcK_Transaction) -> usize;
     pub(crate) fn BtcK_Transaction_GetOutput(
         self_: *const BtcK_Transaction,
@@ -132,8 +126,7 @@ extern "C" {
         len: usize,
         err: *mut *mut BtcK_Error,
     ) -> *mut BtcK_Block;
-    pub(crate) fn BtcK_Block_Retain(self_: *mut BtcK_Block) -> *mut BtcK_Block;
-    pub(crate) fn BtcK_Block_Release(self_: *mut BtcK_Block);
+    pub(crate) fn BtcK_Block_Free(self_: *mut BtcK_Block);
     pub(crate) fn BtcK_Block_GetHash(self_: *const BtcK_Block, out: *mut BtcK_BlockHash);
     pub(crate) fn BtcK_Block_CountTransactions(self_: *const BtcK_Block) -> usize;
     pub(crate) fn BtcK_Block_GetTransaction(
@@ -145,8 +138,7 @@ extern "C" {
     // Chain API
 
     pub(crate) fn BtcK_Chain_New() -> *mut BtcK_Chain;
-    pub(crate) fn BtcK_Chain_Retain(self_: *mut BtcK_Chain) -> *mut BtcK_Chain;
-    pub(crate) fn BtcK_Chain_Release(self_: *mut BtcK_Chain);
+    pub(crate) fn BtcK_Chain_Free(self_: *mut BtcK_Chain);
     pub(crate) fn BtcK_Chain_CountBlocks(self_: *const BtcK_Chain) -> usize;
     pub(crate) fn BtcK_Chain_GetBlock(self_: *const BtcK_Chain, idx: usize) -> *mut BtcK_Block;
     pub(crate) fn BtcK_Chain_FindBlock(

@@ -28,7 +28,7 @@ func NewTransaction(raw []byte) (*Transaction, error) {
 func newTransactionFinalized(ptr *C.struct_BtcK_Transaction) *Transaction {
 	t := &Transaction{ptr}
 	runtime.SetFinalizer(t, func(obj *Transaction) {
-		C.BtcK_Transaction_Release(obj.ptr)
+		C.BtcK_Transaction_Free(obj.ptr)
 	})
 	return t
 }

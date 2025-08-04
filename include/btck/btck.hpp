@@ -223,89 +223,100 @@ struct std::iterator_traits<btck::detail::range_iterator<Range>> {
 };
 
 /******************************************************************************/
-// MARK: ARC Mixin
+// MARK: Ownership
 
 namespace btck::detail {
 
-struct owned_tag {};
+template <typename T> struct c_api_traits;
 
-constexpr auto const owned = owned_tag{};
-
-struct get_impl_;
-
-template <typename T, T* (*Retain)(T*), void (*Release)(T*)> class arc
-{
-protected:
-  using base = arc;
-
-  arc() noexcept
-    : ptr_{nullptr}
-  {}
-
-public:
-  arc(T* ptr, owned_tag /*tag*/) noexcept
-    : ptr_{ptr}
-  {}
-
-protected:
-  arc(arc const& other) noexcept
-    : ptr_{Retain(other.ptr_)}
-  {}
-
-  arc(arc&& other) noexcept
-    : ptr_{std::exchange(other.ptr_, nullptr)}
-  {}
-
-  auto operator=(arc const& other) noexcept -> arc&
-  {
-    if (this != &other) {
-      reset(Retain(other.ptr_));
-    }
-    return *this;
-  }
-
-  auto operator=(arc&& other) noexcept -> arc&
-  {
-    if (this != &other) {
-      reset(other.ptr_);
-      other.ptr_ = nullptr;
-    }
-    return *this;
-  }
-
-  ~arc() { Release(ptr_); }
-
-  [[nodiscard]] auto impl() -> T* { return ptr_; }
-  [[nodiscard]] auto impl() const -> T const* { return ptr_; }
-
-private:
-  void reset(T* ptr = nullptr) noexcept
-  {
-    if (ptr_ != ptr) {
-      Release(ptr_);
-      ptr_ = ptr;
-    }
-  }
-
-  T* ptr_;
-  friend struct get_impl_;
+template <typename T> struct owned_policy {
+  static auto copy(T const* p) { return c_api_traits<T>::copy(p); }
+  static void free(T* p) { c_api_traits<T>::free(p); }
 };
 
+template <typename T> struct unowned_policy {
+  static auto copy(T const* p) { return p; }
+  static void free(T const* /*p*/) {}
+};
+
+struct internal_t {};
+constexpr auto const internal = internal_t{};
+
+template <template <typename> typename Api, template <typename> typename Owned>
+class wrapper : public Api<wrapper<Api, Owned>>
+{
+  using c_type = typename Api<wrapper>::c_type;
+  using ownership_traits = Owned<c_type>;
+
+public:
+  using base = wrapper;
+
+  wrapper(internal_t /*internal*/, c_type* ptr)
+    : ptr_(ptr)
+  {}
+
+  wrapper(wrapper const& other)
+    : ptr_(ownership_traits::copy(other.ptr_))
+  {}
+
+  wrapper(wrapper&& other) noexcept
+    : ptr_(other.ptr_)
+  {
+    other.ptr_ = nullptr;
+  }
+
+  template <template <typename> class OtherOwned>
+  wrapper(wrapper<Api, OtherOwned> const& other)
+    : ptr_(ownership_traits::copy(other.get()))
+  {}
+
+  ~wrapper() { ownership_traits::free(ptr_); }
+
+  auto operator=(wrapper const& other) -> wrapper&
+  {
+    if (this != &other) {
+      ownership_traits::free(ptr_);
+      ptr_ = ownership_traits::copy(other.ptr_);
+    }
+    return *this;
+  }
+
+  auto operator=(wrapper&& other) noexcept -> wrapper&
+  {
+    if (this != &other) {
+      ownership_traits::free(ptr_);
+      ptr_ = std::exchange(other.ptr_, nullptr);
+    }
+    return *this;
+  }
+
+  [[nodiscard]] auto get() -> c_type* { return ptr_; }
+  [[nodiscard]] auto get() const -> c_type const* { return ptr_; }
+
+private:
+  friend struct get_impl_;
+  c_type* ptr_;
+};
+
+template <template <typename> typename Api>
+auto make_unowned(wrapper<Api, owned_policy> const& arg)
+  -> wrapper<Api, unowned_policy>;
+
 struct get_impl_ {
-  template <class T, T* (*Retain)(T*), void (*Release)(T*)>
-  auto operator()(arc<T, Retain, Release>& arg) const -> T*
+  template <template <class> class Api, template <class> class Owned>
+  auto operator()(wrapper<Api, Owned>& arg) const
   {
     return arg.ptr_;
   }
 
-  template <class T, T* (*Retain)(T*), void (*Release)(T*)>
-  auto operator()(arc<T, Retain, Release> const& arg) const -> T const*
+  template <template <class> class Api, template <class> class Owned>
+  auto operator()(wrapper<Api, Owned> const& arg) const
   {
     return arg.ptr_;
   }
 
-  template <class T, T* (*Retain)(T*), void (*Release)(T*)>
-  auto operator()(arc<T, Retain, Release> const* arg) const -> T const* const*
+  template <template <class> class Api, template <class> class Owned>
+  auto operator()(wrapper<Api, Owned> const* arg) const
   {
     return &arg->ptr_;
   }
@@ -527,34 +538,60 @@ auto invoke(Function function, Args... args)
 /******************************************************************************/
 // MARK: ScriptPubkey
 
-namespace btck {
-
-class ScriptPubkey
-  : public detail::arc<
-      BtcK_ScriptPubkey, BtcK_ScriptPubkey_Retain, BtcK_ScriptPubkey_Release>
-{
-public:
-  using base::base;
-
-  ScriptPubkey(std::span<std::byte const> raw)
-    : base{
-        detail::invoke(BtcK_ScriptPubkey_New, raw.data(), raw.size()),
-        detail::owned}
-  {}
-
-private:
-  friend auto operator==(ScriptPubkey const& left, ScriptPubkey const& right)
-    -> bool
+template <> struct btck::detail::c_api_traits<BtcK_ScriptPubkey> {
+  static auto copy(BtcK_ScriptPubkey const* self)
   {
-    return BtcK_ScriptPubkey_Equal(left.impl(), right.impl());
+    return invoke(BtcK_ScriptPubkey_Copy, self);
   }
 
-  friend auto as_bytes(ScriptPubkey const& self) -> std::span<std::byte const>
+  static void free(BtcK_ScriptPubkey* self) { BtcK_ScriptPubkey_Free(self); }
+};
+
+namespace btck {
+namespace detail {
+
+template <typename Derived> class script_pubkey_api
+{
+public:
+  using c_type = BtcK_ScriptPubkey;
+
+private:
+  friend auto operator==(
+    script_pubkey_api const& left, script_pubkey_api const& right) -> bool
+  {
+    return BtcK_ScriptPubkey_Equal(left.impl(), right.impl()) != 0;
+  }
+
+  friend auto as_bytes(script_pubkey_api const& self)
+    -> std::span<std::byte const>
   {
     auto len = std::size_t{};
     auto const* data = BtcK_ScriptPubkey_AsBytes(self.impl(), &len);
     return detail::as_bytes(data, len);
   }
+
+  [[nodiscard]] auto impl() const
+  {
+    return static_cast<Derived const*>(this)->get();
+  }
+
+  friend Derived;
+  script_pubkey_api() = default;
+};
+
+}  // namespace detail
+
+class script_pubkey
+  : public detail::wrapper<detail::script_pubkey_api, detail::owned_policy>
+{
+public:
+  using base::base;
+
+  script_pubkey(std::span<std::byte const> raw)
+    : base{
+        detail::internal,
+        detail::invoke(BtcK_ScriptPubkey_New, raw.data(), raw.size())}
+  {}
 };
 
 }  // namespace btck
@@ -562,34 +599,62 @@ private:
 /******************************************************************************/
 // MARK: TransactionOutput
 
-namespace btck {
+template <> struct btck::detail::c_api_traits<BtcK_TransactionOutput> {
+  static auto copy(BtcK_TransactionOutput const* self)
+  {
+    return invoke(BtcK_TransactionOutput_Copy, self);
+  }
 
-class TransactionOutput
-  : public detail::arc<
-      BtcK_TransactionOutput, BtcK_TransactionOutput_Retain,
-      BtcK_TransactionOutput_Release>
+  static void free(BtcK_TransactionOutput* self)
+  {
+    BtcK_TransactionOutput_Free(self);
+  }
+};
+
+namespace btck {
+namespace detail {
+
+template <typename Derived> class transaction_output_api
 {
 public:
-  using base::base;
-
-  TransactionOutput(std::int64_t amount, ScriptPubkey const& script_pubkey)
-    : base{
-        detail::invoke(
-          BtcK_TransactionOutput_New, amount, detail::get_impl(script_pubkey)),
-        detail::owned}
-  {}
+  using c_type = BtcK_TransactionOutput;
 
   [[nodiscard]] auto amount() const -> std::int64_t
   {
     return BtcK_TransactionOutput_GetAmount(this->impl());
   }
 
-  [[nodiscard]] auto script_pubkey() const -> ScriptPubkey
+  [[nodiscard]] auto script_pubkey() const -> btck::script_pubkey
   {
     return {
-      detail::invoke(BtcK_TransactionOutput_GetScriptPubkey, this->impl()),
-      detail::owned};
+      detail::internal,
+      detail::invoke(BtcK_TransactionOutput_GetScriptPubkey, this->impl())};
   }
+
+private:
+  [[nodiscard]] auto impl() const
+  {
+    return static_cast<Derived const*>(this)->get();
+  }
+
+  friend Derived;
+  transaction_output_api() = default;
+};
+
+}  // namespace detail
+
+class transaction_output
+  : public detail::wrapper<detail::transaction_output_api, detail::owned_policy>
+{
+public:
+  using base::base;
+
+  transaction_output(std::int64_t amount, btck::script_pubkey const& sp)
+    : base{
+        detail::internal,
+        detail::invoke(
+          BtcK_TransactionOutput_New, amount, detail::get_impl(sp))}
+  {}
 };
 
 }  // namespace btck
@@ -597,47 +662,95 @@ public:
 /******************************************************************************/
 // MARK: Transaction
 
-namespace btck {
+template <> struct btck::detail::c_api_traits<BtcK_Transaction> {
+  static auto copy(BtcK_Transaction const* self)
+  {
+    return invoke(BtcK_Transaction_Copy, self);
+  }
 
-class Transaction
-  : public detail::arc<
-      BtcK_Transaction, BtcK_Transaction_Retain, BtcK_Transaction_Release>
-  , public detail::range<Transaction const>
+  static void free(BtcK_Transaction* self) { BtcK_Transaction_Free(self); }
+};
+
+namespace btck {
+namespace detail {
+
+template <typename Derived>
+class transaction_outputs_api
+  : public range<transaction_outputs_api<Derived> const>
 {
 public:
-  using value_type = TransactionOutput;
-
-  using base::base;
-
-  Transaction(std::span<std::byte const> raw)
-    : base{
-        detail::invoke(BtcK_Transaction_New, raw.data(), raw.size()),
-        detail::owned}
-  {}
+  using c_type = BtcK_Transaction const;
+  using value_type = transaction_output;
 
   [[nodiscard]] auto size() const -> std::size_t
   {
     return BtcK_Transaction_CountOutputs(this->impl());
   }
+
   [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
   {
-    return {BtcK_Transaction_GetOutput(this->impl(), idx), detail::owned};
+    return {detail::internal, BtcK_Transaction_GetOutput(this->impl(), idx)};
   }
 
 private:
-  friend auto as_bytes(Transaction const& self) -> std::span<std::byte const>
+  [[nodiscard]] auto impl() const
+  {
+    return static_cast<Derived const*>(this)->get();
+  }
+
+  friend Derived;
+  transaction_outputs_api() = default;
+};
+
+template <typename Derived> class transaction_api
+{
+public:
+  using c_type = BtcK_Transaction;
+
+  [[nodiscard]] auto outputs() const
+    -> detail::wrapper<transaction_outputs_api, unowned_policy>
+  {
+    return {detail::internal, impl()};
+  }
+
+private:
+  friend auto as_bytes(transaction_api const& self)
+    -> std::span<std::byte const>
   {
     auto len = std::size_t{};
     auto const* data = BtcK_Transaction_AsBytes(self.impl(), &len);
     return detail::as_bytes(data, len);
   }
 
-  friend auto to_string(Transaction const& self) -> std::string_view
+  friend auto to_string(transaction_api const& self) -> std::string_view
   {
     auto len = std::size_t{};
     char const* data = BtcK_Transaction_ToString(self.impl(), &len);
     return {data, len};
   }
+
+  [[nodiscard]] auto impl() const
+  {
+    return static_cast<Derived const*>(this)->get();
+  }
+
+  friend Derived;
+  transaction_api() = default;
+};
+
+}  // namespace detail
+
+class transaction
+  : public detail::wrapper<detail::transaction_api, detail::owned_policy>
+{
+public:
+  using base::base;
+
+  transaction(std::span<std::byte const> raw)
+    : base{
+        detail::internal,
+        detail::invoke(BtcK_Transaction_New, raw.data(), raw.size())}
+  {}
 };
 
 }  // namespace btck
@@ -650,17 +763,18 @@ namespace detail {
 
 struct verify_fn {
   auto operator()(
-    ScriptPubkey const& script_pubkey, std::int64_t amount,
-    Transaction const& tx_to, std::span<TransactionOutput const> spent_outputs,
+    script_pubkey const& script_pubkey, std::int64_t amount,
+    transaction const& tx_to, std::span<transaction_output const> spent_outputs,
     unsigned int input_index, verification_flags flags) const -> bool
   {
-    return detail::invoke(
+    int const result = detail::invoke(
       BtcK_Verify, detail::get_impl(script_pubkey), amount,
       detail::get_impl(tx_to),
       (spent_outputs.empty() ? nullptr
                              : detail::get_impl(spent_outputs.data())),
       spent_outputs.size(), input_index,
       static_cast<BtcK_VerificationFlags>(flags));
+    return result != 0;
   }
 };
 
@@ -698,9 +812,8 @@ private:
     return as_bytes(std::span{self.impl_.data});
   }
 
+public:
   BtcK_BlockHash impl_;
-  friend class Block;
-  friend class Chain;
 };
 
 }  // namespace btck
@@ -708,21 +821,50 @@ private:
 /******************************************************************************/
 // MARK: Block
 
-namespace btck {
+template <> struct btck::detail::c_api_traits<BtcK_Block> {
+  static auto copy(BtcK_Block const* self)
+  {
+    return invoke(BtcK_Block_Copy, self);
+  }
 
-class Block
-  : public detail::arc<BtcK_Block, BtcK_Block_Retain, BtcK_Block_Release>
-  , public detail::range<Block const>
+  static void free(BtcK_Block* self) { BtcK_Block_Free(self); }
+};
+
+namespace btck {
+namespace detail {
+
+template <typename Derived>
+class block_transactions_api
+  : public range<block_transactions_api<Derived> const>
 {
 public:
-  using value_type = Transaction;
+  using c_type = BtcK_Block const;
+  using value_type = transaction;
 
-  using base::base;
+  [[nodiscard]] auto size() const -> std::size_t
+  {
+    return BtcK_Block_CountTransactions(this->impl());
+  }
 
-  Block(std::span<std::byte const> raw)
-    : base{
-        detail::invoke(BtcK_Block_New, raw.data(), raw.size()), detail::owned}
-  {}
+  [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
+  {
+    return {detail::internal, BtcK_Block_GetTransaction(this->impl(), idx)};
+  }
+
+private:
+  [[nodiscard]] auto impl() const
+  {
+    return static_cast<Derived const*>(this)->get();
+  }
+
+  friend Derived;
+  block_transactions_api() = default;
+};
+
+template <typename Derived> class block_api
+{
+public:
+  using c_type = BtcK_Block;
 
   [[nodiscard]] auto hash() const -> BlockHash
   {
@@ -731,22 +873,42 @@ public:
     return hash;
   }
 
-  [[nodiscard]] auto size() const -> std::size_t
+  [[nodiscard]] auto transactions() const
+    -> detail::wrapper<block_transactions_api, unowned_policy>
   {
-    return BtcK_Block_CountTransactions(this->impl());
-  }
-  [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
-  {
-    return {BtcK_Block_GetTransaction(this->impl(), idx), detail::owned};
+    return {detail::internal, impl()};
   }
 
 private:
-  friend auto as_bytes(Block const& self) -> std::span<std::byte const>
+  friend auto as_bytes(block_api const& self) -> std::span<std::byte const>
   {
     auto len = std::size_t{};
     auto const* data = BtcK_Block_AsBytes(self.impl(), &len);
     return detail::as_bytes(data, len);
   }
+
+  [[nodiscard]] auto impl() const
+  {
+    return static_cast<Derived const*>(this)->get();
+  }
+
+  friend Derived;
+  block_api() = default;
+};
+
+}  // namespace detail
+
+class block : public detail::wrapper<detail::block_api, detail::owned_policy>
+{
+public:
+  using api_policy = block_api;
+  using base::base;
+
+  block(std::span<std::byte const> raw)
+    : base{
+        detail::internal,
+        detail::invoke(BtcK_Block_New, raw.data(), raw.size())}
+  {}
 };
 
 enum class ValidationState : std::uint8_t {
@@ -770,8 +932,11 @@ enum class ValidationResult : std::uint8_t {
   HEADER_LOW_WORK,  //!< the block header may be on a too-little-work chain
 };
 
+template <typename T>
+using unowned = decltype(detail::make_unowned(std::declval<T>()));
+
 using Validation =
-  std::function<void(Block const&, ValidationState, ValidationResult)>;
+  std::function<void(unowned<block> const&, ValidationState, ValidationResult)>;
 
 enum class chain_type : BtcK_ChainType {
   mainnet = BtcK_ChainType_MAINNET,
@@ -841,7 +1006,7 @@ public:
   // auto ImportBlocks(std::span<std::string const> paths) -> bool;
   // auto ProcessBlock(Block const& block, bool* new_block) -> bool;
 
-  using value_type = Block;
+  using value_type = block;
 
   [[nodiscard]] auto size() const -> std::size_t
   {
@@ -850,7 +1015,7 @@ public:
 
   [[nodiscard]] auto operator[](std::size_t height) const -> value_type
   {
-    return {BtcK_Chain_GetBlock(this->impl_.get(), height), detail::owned};
+    return {detail::internal, BtcK_Chain_GetBlock(this->impl_.get(), height)};
   }
 
   [[nodiscard]] auto find(BlockHash const& block_hash) const -> iterator
@@ -862,7 +1027,7 @@ public:
 
 private:
   struct deleter {
-    void operator()(BtcK_Chain* chain) const { BtcK_Chain_Release(chain); }
+    void operator()(BtcK_Chain* chain) const { BtcK_Chain_Free(chain); }
   };
 
   std::unique_ptr<BtcK_Chain, deleter> impl_;

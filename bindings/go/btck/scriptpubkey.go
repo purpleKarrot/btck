@@ -28,7 +28,7 @@ func NewScriptPubkey(raw []byte) (*ScriptPubkey, error) {
 func newScriptPubkeyFinalized(ptr *C.struct_BtcK_ScriptPubkey) *ScriptPubkey {
 	s := &ScriptPubkey{ptr}
 	runtime.SetFinalizer(s, func(obj *ScriptPubkey) {
-		C.BtcK_ScriptPubkey_Release(obj.ptr)
+		C.BtcK_ScriptPubkey_Free(obj.ptr)
 	})
 	return s
 }

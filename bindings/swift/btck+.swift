@@ -25,7 +25,7 @@ extension Transaction: RandomAccessCollection {
         guard let output = BtcK_Transaction_GetOutput(ptr, position) else {
             fatalError("Index out of bounds")
         }
-        return TransactionOutput(owned: output)
+        return TransactionOutput(ptr: output)
     }
 }
 
@@ -52,7 +52,7 @@ extension Block: RandomAccessCollection {
         guard let output = BtcK_Block_GetTransaction(ptr, position) else {
             fatalError("Index out of bounds")
         }
-        return Transaction(owned: output)
+        return Transaction(ptr: output)
     }
 }
 
@@ -70,6 +70,6 @@ extension Chain: RandomAccessCollection {
         guard let output = BtcK_Chain_GetBlock(ptr, position) else {
             fatalError("Index out of bounds")
         }
-        return Block(owned: output)
+        return Block(ptr: output)
     }
 }

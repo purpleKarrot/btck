@@ -30,7 +30,7 @@ JNIEXPORT void JNICALL Java_Chain_close(JNIEnv* env, jobject self)
   jlong handle = (*env)->GetLongField(env, self, fid);
   struct BtcK_Chain* ptr = (struct BtcK_Chain*)(uintptr_t)handle;
   if (ptr != NULL) {
-    BtcK_Chain_Release(ptr);
+    BtcK_Chain_Free(ptr);
     (*env)->SetLongField(env, self, fid, (jlong)0);
   }
 }

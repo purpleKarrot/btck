@@ -39,7 +39,7 @@ PyTypeObject Transaction_Type = {
 
 static void dealloc(struct Self* self)
 {
-  BtcK_Transaction_Release(self->impl);
+  BtcK_Transaction_Free(self->impl);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -72,7 +72,7 @@ PyObject* Transaction_New(struct BtcK_Transaction* tx)
 {
   struct Self* self = PyObject_New(struct Self, &Transaction_Type);
   if (self == NULL) {
-    BtcK_Transaction_Release(tx);
+    BtcK_Transaction_Free(tx);
     return NULL;
   }
   self->impl = tx;

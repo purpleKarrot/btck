@@ -53,24 +53,24 @@ TEST(Block, Genesis)
     0x70, 0x2b, 0x6b, 0xf1, 0x1d, 0x5f, 0xac,
   };
 
-  auto const block = btck::Block{as_bytes(std::span{block_data})};
+  auto const block = btck::block{as_bytes(std::span{block_data})};
 
-  EXPECT_FALSE(block.empty());
+  EXPECT_FALSE(block.transactions().empty());
   EXPECT_EQ(block.hash(), btck::BlockHash{as_bytes(std::span{block_hash})});
 
-  EXPECT_EQ(block.size(), 1);
-  auto const tx = block.front();
+  EXPECT_EQ(block.transactions().size(), 1);
+  auto const tx = block.transactions().front();
 
-  EXPECT_EQ(tx.size(), 1);
-  auto const txout = tx.front();
+  EXPECT_EQ(tx.outputs().size(), 1);
+  auto const txout = tx.outputs().front();
 
   EXPECT_EQ(txout.amount(), 50'00000000);
   EXPECT_EQ(
     txout.script_pubkey(),
-    btck::ScriptPubkey{as_bytes(std::span{script_pubkey})});
+    btck::script_pubkey{as_bytes(std::span{script_pubkey})});
 
-  for (auto const& tx : block) {
-    for (auto const& txout : tx) {
+  for (auto const& tx : block.transactions()) {
+    for (auto const& txout : tx.outputs()) {
       EXPECT_EQ(txout.amount(), 50'00000000);
     }
   }

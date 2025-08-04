@@ -28,7 +28,7 @@ func NewTransactionOutput(amount int64, scriptPubkey *ScriptPubkey) (*Transactio
 func newTransactionOutputFinalized(ptr *C.struct_BtcK_TransactionOutput) *TransactionOutput {
 	t := &TransactionOutput{ptr}
 	runtime.SetFinalizer(t, func(obj *TransactionOutput) {
-		C.BtcK_TransactionOutput_Release(obj.ptr)
+		C.BtcK_TransactionOutput_Free(obj.ptr)
 	})
 	return t
 }

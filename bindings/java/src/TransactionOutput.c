@@ -47,7 +47,7 @@ JNIEXPORT void JNICALL Java_TransactionOutput_close(JNIEnv* env, jobject self)
   struct BtcK_TransactionOutput* ptr =
     (struct BtcK_TransactionOutput*)(uintptr_t)handle;
   if (ptr) {
-    BtcK_TransactionOutput_Release(ptr);
+    BtcK_TransactionOutput_Free(ptr);
     (*env)->SetLongField(env, self, fid, (jlong)0);
   }
 }

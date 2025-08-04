@@ -30,7 +30,7 @@ func NewBlock(raw []byte) (*Block, error) {
 func newBlockFinalized(ptr *C.struct_BtcK_Block) *Block {
 	b := &Block{ptr}
 	runtime.SetFinalizer(b, func(obj *Block) {
-		C.BtcK_Block_Release(obj.ptr)
+		C.BtcK_Block_Free(obj.ptr)
 	})
 	return b
 }

@@ -36,6 +36,6 @@ impl ScriptPubkey {
 
 impl Drop for ScriptPubkey {
     fn drop(&mut self) {
-        unsafe { crate::ffi::BtcK_ScriptPubkey_Release(self.ptr) }
+        unsafe { crate::ffi::BtcK_ScriptPubkey_Free(self.ptr) }
     }
 }

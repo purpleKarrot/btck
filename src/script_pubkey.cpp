@@ -26,12 +26,13 @@ auto BtcK_ScriptPubkey_New(
   });
 }
 
-auto BtcK_ScriptPubkey_Retain(BtcK_ScriptPubkey* self) -> BtcK_ScriptPubkey*
+auto BtcK_ScriptPubkey_Copy(
+  BtcK_ScriptPubkey const* self, struct BtcK_Error** err) -> BtcK_ScriptPubkey*
 {
-  return self->Retain();
+  return util::WrapFn(err, [=] { return self->Retain(); });
 }
 
-void BtcK_ScriptPubkey_Release(BtcK_ScriptPubkey* self)
+void BtcK_ScriptPubkey_Free(BtcK_ScriptPubkey* self)
 {
   self->Release();
 }

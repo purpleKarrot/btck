@@ -52,7 +52,7 @@ end
 
 function release!(obj::ScriptPubkey)
     if obj.ptr != C_NULL
-        ccall((:btck_ScriptPubkey_Release, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
+        ccall((:btck_ScriptPubkey_Free, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
         obj.ptr = C_NULL
     end
     nothing
@@ -87,7 +87,7 @@ end
 
 function release!(obj::TransactionOutput)
     if obj.ptr != C_NULL
-        ccall((:btck_TransactionOutput_Release, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
+        ccall((:btck_TransactionOutput_Free, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
         obj.ptr = C_NULL
     end
     nothing
@@ -120,7 +120,7 @@ end
 
 function release!(obj::Transaction)
     if obj.ptr != C_NULL
-        ccall((:btck_Transaction_Release, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
+        ccall((:btck_Transaction_Free, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
         obj.ptr = C_NULL
     end
     nothing
@@ -179,7 +179,7 @@ end
 
 function release!(obj::Block)
     if obj.ptr != C_NULL
-        ccall((:btck_Block_Release, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
+        ccall((:btck_Block_Free, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
         obj.ptr = C_NULL
     end
     nothing
@@ -224,7 +224,7 @@ end
 
 function release!(obj::Chain)
     if obj.ptr != C_NULL
-        ccall((:btck_Chain_Release, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
+        ccall((:btck_Chain_Free, libbtck), Cvoid, (Ptr{Cvoid},), obj.ptr)
         obj.ptr = C_NULL
     end
     nothing

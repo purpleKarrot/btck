@@ -36,14 +36,9 @@
 
 extern "C" {
 
-auto BtcK_Chain_Retain(BtcK_Chain* self) -> BtcK_Chain*
+void BtcK_Chain_Free(BtcK_Chain* self)
 {
-  return self->Retain();
-}
-
-void BtcK_Chain_Release(BtcK_Chain* self)
-{
-  self->Release();
+  delete self;
 }
 
 auto BtcK_Chain_CountBlocks(BtcK_Chain const* self) -> std::size_t

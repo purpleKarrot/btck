@@ -49,12 +49,13 @@ auto BtcK_Block_New(void const* raw, std::size_t len, struct BtcK_Error** err)
   });
 }
 
-auto BtcK_Block_Retain(BtcK_Block* self) -> BtcK_Block*
+auto BtcK_Block_Copy(BtcK_Block const* self, struct BtcK_Error** err)
+  -> BtcK_Block*
 {
-  return self->Retain();
+  return util::WrapFn(err, [=] { return self->Retain(); });
 }
 
-void BtcK_Block_Release(BtcK_Block* self)
+void BtcK_Block_Free(BtcK_Block* self)
 {
   self->Release();
 }

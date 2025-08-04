@@ -33,16 +33,16 @@ TEST(Transaction, Transaction)
     0x01, 0x9e, 0x75, 0x6c, 0x88, 0xac, 0x6a, 0xcb, 0x07, 0x00,
   };
 
-  auto const transaction = btck::Transaction{as_bytes(std::span{data})};
+  auto const tx = btck::transaction{as_bytes(std::span{data})};
 
-  EXPECT_FALSE(transaction.empty());
-  EXPECT_EQ(transaction.size(), 2);
+  EXPECT_FALSE(tx.outputs().empty());
+  EXPECT_EQ(tx.outputs().size(), 2);
 
-  EXPECT_EQ(transaction.front().amount(), 20737411);
-  EXPECT_EQ(transaction.back().amount(), 42130042);
+  EXPECT_EQ(tx.outputs().front().amount(), 20737411);
+  EXPECT_EQ(tx.outputs().back().amount(), 42130042);
 
   EXPECT_EQ(
-    to_string(transaction),
+    to_string(tx),
     "CTransaction(hash=aca326a724, ver=2, vin.size=1, vout.size=2, "
     "nLockTime=510826)\n"
     "    CTxIn(COutPoint(95da344585, 0), scriptSig=483045022100de1ac3bcdfb0, "

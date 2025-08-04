@@ -6,32 +6,21 @@
 namespace BtcK {
 
 [Compact]
-[CCode (
-    cname = "struct BtcK_Error",
-    free_function = "BtcK_Error_Free"
-)]
+[CCode (cname = "struct BtcK_Error", free_function = "BtcK_Error_Free")]
 public class Error {
     [CCode (cname = "BtcK_Error_New")]
     public Error (string domain, int code, string message);
 }
 
 [Compact]
-[CCode (
-    cname = "struct BtcK_ScriptPubkey",
-    ref_function = "BtcK_ScriptPubkey_Retain",
-    unref_function = "BtcK_ScriptPubkey_Release"
-)]
+[CCode (cname = "struct BtcK_ScriptPubkey", free_function = "BtcK_ScriptPubkey_Free")]
 public class ScriptPubkey {
     [CCode (cname = "BtcK_ScriptPubkey_New")]
     public ScriptPubkey (uchar[] raw);
 }
 
 [Compact]
-[CCode (
-    cname = "struct BtcK_TransactionOutput",
-    ref_function = "BtcK_TransactionOutput_Retain",
-    unref_function = "BtcK_TransactionOutput_Release"
-)]
+[CCode (cname = "struct BtcK_TransactionOutput", free_function = "BtcK_TransactionOutput_Free")]
 public class TransactionOutput {
     [CCode (cname = "BtcK_TransactionOutput_New")]
     public TransactionOutput (ScriptPubkey script_pubkey, int64 amount);
@@ -48,11 +37,7 @@ public class TransactionOutput {
 }
 
 [Compact]
-[CCode (
-    cname = "struct BtcK_Transaction",
-    ref_function = "BtcK_Transaction_Retain",
-    unref_function = "BtcK_Transaction_Release"
-)]
+[CCode (cname = "struct BtcK_Transaction", free_function = "BtcK_Transaction_Free")]
 public class Transaction {
     [CCode (cname = "BtcK_Transaction_New")]
     public Transaction(uchar[] raw, out Error error);
@@ -77,11 +62,7 @@ public struct BlockHash {
 }
 
 [Compact]
-[CCode (
-    cname = "struct BtcK_Block",
-    ref_function = "BtcK_Block_Retain",
-    unref_function = "BtcK_Block_Release"
-)]
+[CCode (cname = "struct BtcK_Block", free_function = "BtcK_Block_Free")]
 public class Block {
     [CCode (cname = "BtcK_Block_New")]
     public Block (uchar[] raw, out Error error);

@@ -51,7 +51,7 @@ PyTypeObject Chain_Type = {
 
 static void dealloc(struct Self* self)
 {
-  BtcK_Chain_Release(self->impl);
+  BtcK_Chain_Free(self->impl);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 

@@ -59,7 +59,7 @@ impl Transaction {
 
 impl Drop for Transaction {
     fn drop(&mut self) {
-        unsafe { crate::ffi::BtcK_Transaction_Release(self.ptr) }
+        unsafe { crate::ffi::BtcK_Transaction_Free(self.ptr) }
     }
 }
 

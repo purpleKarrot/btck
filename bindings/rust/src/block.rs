@@ -35,7 +35,7 @@ impl Block {
 
 impl Drop for Block {
     fn drop(&mut self) {
-        unsafe { crate::ffi::BtcK_Block_Release(self.ptr) }
+        unsafe { crate::ffi::BtcK_Block_Free(self.ptr) }
     }
 }
 
