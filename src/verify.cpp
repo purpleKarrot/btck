@@ -76,15 +76,16 @@ auto BtcK_Verify(
   struct BtcK_Transaction const* tx,
   struct BtcK_TransactionOutput const* const* spent_outputs,
   std::size_t spent_outputs_len, unsigned int input_index,
-  BtcK_VerificationFlags flags, struct BtcK_Error** err) -> bool
+  BtcK_VerificationFlags flags, struct BtcK_Error** err) -> int
 {
   return util::WrapFn(err, [=] {
     auto const spent_outputs_view =
       std::span{spent_outputs, spent_outputs_len} |
       std::views::transform([](auto const* out) { return out->tx_out; });
-    return verify(
+    auto const result = verify(
       script_pubkey->script, amount, *tx->transaction,
       std::vector(spent_outputs_view.begin(), spent_outputs_view.end()),
       input_index, flags);
+    return result ? 1 : 0;
   });
 }

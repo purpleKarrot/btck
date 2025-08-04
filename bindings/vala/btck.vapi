@@ -64,7 +64,7 @@ public class Transaction {
     public TransactionOutput get (size_t index);
 
     public size_t size {
-        [CCode (cname = "BtcK_Transaction_NumOutputs")]
+        [CCode (cname = "BtcK_Transaction_CountOutputs")]
         get;
     }
 }
@@ -90,7 +90,7 @@ public class Block {
     public Transaction get (size_t index);
 
     public size_t size {
-        [CCode (cname = "BtcK_Block_NumTransactions")]
+        [CCode (cname = "BtcK_Block_CountTransactions")]
         get;
     }
 

@@ -46,7 +46,7 @@ void BtcK_Chain_Release(BtcK_Chain* self)
   self->Release();
 }
 
-auto BtcK_Chain_NumBlocks(BtcK_Chain const* self) -> std::size_t
+auto BtcK_Chain_CountBlocks(BtcK_Chain const* self) -> std::size_t
 {
   return self->chainstate_manager.ActiveChain().Height();
 }

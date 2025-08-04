@@ -52,7 +52,7 @@ jint Java_Transaction_size(JNIEnv* env, jobject self)
     return 0;
   }
 
-  return (jint)BtcK_Transaction_NumOutputs(ptr);
+  return (jint)BtcK_Transaction_CountOutputs(ptr);
 }
 
 jobject Java_Transaction_get(JNIEnv* env, jobject self, jint idx)

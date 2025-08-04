@@ -125,7 +125,7 @@ static PyObject* get_blocks_slice(
 
 static Py_ssize_t num_blocks(struct Self const* self)
 {
-  return (Py_ssize_t)BtcK_Chain_NumBlocks(self->impl);
+  return (Py_ssize_t)BtcK_Chain_CountBlocks(self->impl);
 }
 
 static PyObject* get_block(struct Self* self, Py_ssize_t idx)

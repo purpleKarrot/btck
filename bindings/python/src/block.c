@@ -101,7 +101,7 @@ static PyObject* get_transactions_slice(
 
 static Py_ssize_t num_transactions(struct Self const* self)
 {
-  return (Py_ssize_t)BtcK_Block_NumTransactions(self->impl);
+  return (Py_ssize_t)BtcK_Block_CountTransactions(self->impl);
 }
 
 static PyObject* get_transaction(struct Self* self, Py_ssize_t idx)

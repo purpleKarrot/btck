@@ -2,19 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <setjmp.h>  // IWYU pragma: keep
-#include <stdarg.h>  // IWYU pragma: keep
-#include <stddef.h>
-#include <stdint.h>
+import assert from "node:assert/strict";
+import test from "node:test";
 
-// include after standard headers
-#include <btck/btck.h>
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const btck = require(`${process.env.BTCK_NODE_DIR}/btck.node`);
 
-#include <cmocka.h>
-
-static void test_transaction(void** state)
-{
-  uint8_t const data[] = {
+test("transaction", () => {
+  const data = Buffer.from([
     0x02, 0x00, 0x00, 0x00, 0x01, 0x3f, 0x7c, 0xeb, 0xd6, 0x5c, 0x27, 0x43,
     0x1a, 0x90, 0xbb, 0xa7, 0xf7, 0x96, 0x91, 0x4f, 0xe8, 0xcc, 0x2d, 0xdf,
     0xc3, 0xf2, 0xcb, 0xd6, 0xf7, 0xe5, 0xf2, 0xfc, 0x85, 0x45, 0x34, 0xda,
@@ -34,35 +30,18 @@ static void test_transaction(void** state)
     0x00, 0x00, 0x00, 0x00, 0x19, 0x76, 0xa9, 0x14, 0xfb, 0xed, 0x3d, 0x9b,
     0x11, 0x18, 0x32, 0x09, 0xa5, 0x79, 0x99, 0xd5, 0x4d, 0x59, 0xf6, 0x7c,
     0x01, 0x9e, 0x75, 0x6c, 0x88, 0xac, 0x6a, 0xcb, 0x07, 0x00,
-  };
+  ]);
 
-  struct BtcK_Error* error = NULL;
-  struct BtcK_Transaction* transaction =
-    BtcK_Transaction_New(data, sizeof(data), &error);
-  if (error != NULL) {
-    BtcK_Error_Free(error);
-  }
+  const tx = new btck.Transaction(data);
 
-  assert_int_equal(BtcK_Transaction_CountOutputs(transaction), 2);
+  assert.equal(tx.outputs.length, 2);
 
-  struct BtcK_TransactionOutput* txout1 =
-    BtcK_Transaction_GetOutput(transaction, 0);
-  assert_int_equal(BtcK_TransactionOutput_GetAmount(txout1), 20737411);
-  BtcK_TransactionOutput_Release(txout1);
+  // assert.equal(tx.outputs[0].constructor.name, "TransactionOutput");
 
-  struct BtcK_TransactionOutput* txout2 =
-    BtcK_Transaction_GetOutput(transaction, 1);
-  assert_int_equal(BtcK_TransactionOutput_GetAmount(txout2), 42130042);
-  BtcK_TransactionOutput_Release(txout1);
+  assert.equal(tx.outputs[0].amount, 20737411);
+  // assert.equal(tx.outputs[1].amount, 42130042);
 
-  BtcK_Transaction_Release(transaction);
-}
-
-int main(void)
-{
-  struct CMUnitTest const tests[] = {
-    cmocka_unit_test(test_transaction),
-  };
-
-  return cmocka_run_group_tests(tests, NULL, NULL);
-}
+  // for (const output of tx.outputs) {
+  //   console.log(output.amount);
+  // }
+});

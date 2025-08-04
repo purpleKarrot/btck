@@ -44,7 +44,7 @@ JNIEXPORT jint JNICALL Java_Chain_size(JNIEnv* env, jobject self)
     return 0;
   }
 
-  return (jint)BtcK_Chain_NumBlocks(ptr);
+  return (jint)BtcK_Chain_CountBlocks(ptr);
 }
 
 JNIEXPORT jobject JNICALL Java_Chain_get(JNIEnv* env, jobject self, jint idx)

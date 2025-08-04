@@ -617,7 +617,7 @@ public:
 
   [[nodiscard]] auto size() const -> std::size_t
   {
-    return BtcK_Transaction_NumOutputs(this->impl());
+    return BtcK_Transaction_CountOutputs(this->impl());
   }
   [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
   {
@@ -733,7 +733,7 @@ public:
 
   [[nodiscard]] auto size() const -> std::size_t
   {
-    return BtcK_Block_NumTransactions(this->impl());
+    return BtcK_Block_CountTransactions(this->impl());
   }
   [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
   {
@@ -845,7 +845,7 @@ public:
 
   [[nodiscard]] auto size() const -> std::size_t
   {
-    return BtcK_Chain_NumBlocks(this->impl_.get());
+    return BtcK_Chain_CountBlocks(this->impl_.get());
   }
 
   [[nodiscard]] auto operator[](std::size_t height) const -> value_type

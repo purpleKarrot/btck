@@ -52,7 +52,7 @@ jint Java_Block_size(JNIEnv* env, jobject self)
     return 0;
   }
 
-  return (jint)BtcK_Block_NumTransactions(ptr);
+  return (jint)BtcK_Block_CountTransactions(ptr);
 }
 
 jobject Java_Block_get(JNIEnv* env, jobject self, jint idx)

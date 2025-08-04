@@ -112,6 +112,12 @@ if(BTCK_ENABLE_PYTHON)
   add_subdirectory(test/python)
 endif()
 
+option(BTCK_ENABLE_RUST "Build Rust extension" ON)
+if(BTCK_ENABLE_RUST)
+  # add_subdirectory(bindings/rust)
+  add_subdirectory(test/rust)
+endif()
+
 option(BTCK_ENABLE_VALA "Enable Vala/Genie" OFF)
 if(BTCK_ENABLE_VALA)
   add_subdirectory(bindings/vala)

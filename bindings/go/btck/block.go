@@ -45,11 +45,11 @@ func (b *Block) Hash() BlockHash {
 	return out
 }
 
-func (b *Block) Len() int {
-	return int(C.BtcK_Block_NumTransactions(b.ptr))
+func (b *Block) CountTransactions() int {
+	return int(C.BtcK_Block_CountTransactions(b.ptr))
 }
 
-func (b *Block) At(idx int) *Transaction {
+func (b *Block) GetTransaction(idx int) *Transaction {
 	return &Transaction{C.BtcK_Block_GetTransaction(b.ptr, C.size_t(idx))}
 }
 

@@ -1,6 +1,8 @@
 [
   { "include": ["\"btck/btck.h\"", "private", "<btck/btck.h>", "public"] },
 
+  { "include": ["\"js_native_api.h\"", "private", "<node_api.h>", "public"] },
+
   { "include": ["<abstract.h>", "private", "<Python.h>", "public"] },
   { "include": ["<boolobject.h>", "private", "<Python.h>", "public"] },
   { "include": ["<bytesobject.h>", "private", "<Python.h>", "public"] },

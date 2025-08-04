@@ -93,7 +93,7 @@ static PyObject* get_outputs_slice(
 
 static Py_ssize_t num_outputs(struct Self const* self)
 {
-  return (Py_ssize_t)BtcK_Transaction_NumOutputs(self->impl);
+  return (Py_ssize_t)BtcK_Transaction_CountOutputs(self->impl);
 }
 
 static PyObject* get_output(struct Self* self, Py_ssize_t idx)

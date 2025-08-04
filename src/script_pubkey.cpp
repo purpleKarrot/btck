@@ -37,9 +37,9 @@ void BtcK_ScriptPubkey_Release(BtcK_ScriptPubkey* self)
 }
 
 auto BtcK_ScriptPubkey_Equal(
-  BtcK_ScriptPubkey const* left, BtcK_ScriptPubkey const* right) -> bool
+  BtcK_ScriptPubkey const* left, BtcK_ScriptPubkey const* right) -> int
 {
-  return left->script == right->script;
+  return (left->script == right->script) ? 1 : 0;
 }
 
 auto BtcK_ScriptPubkey_AsBytes(BtcK_ScriptPubkey const* self, std::size_t* len)

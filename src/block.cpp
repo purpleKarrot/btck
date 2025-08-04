@@ -65,7 +65,7 @@ void BtcK_Block_GetHash(BtcK_Block const* self, BtcK_BlockHash* out)
   BtcK_BlockHash_Init(out, hash.data(), decltype(hash)::size());
 }
 
-auto BtcK_Block_NumTransactions(BtcK_Block const* self) -> std::size_t
+auto BtcK_Block_CountTransactions(BtcK_Block const* self) -> std::size_t
 {
   return self->block.vtx.size();
 }

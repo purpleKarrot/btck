@@ -30,19 +30,19 @@ func TestTransaction(t *testing.T) {
 
 	tx, _ := btck.NewTransaction(data)
 
-	if tx.Len() != 2 {
-		t.Fatalf("expected 2 outputs, got %d", tx.Len())
+	if tx.CountOutputs() != 2 {
+		t.Fatalf("expected 2 outputs, got %d", tx.CountOutputs())
 	}
 
-	if tx.At(0).Amount() != 20737411 {
-		t.Errorf("expected first output amount 20737411, got %d", tx.At(0).Amount())
+	if tx.GetOutput(0).Amount() != 20737411 {
+		t.Errorf("expected first output amount 20737411, got %d", tx.GetOutput(0).Amount())
 	}
 
-	if tx.At(1).Amount() != 42130042 {
-		t.Errorf("expected second output amount 42130042, got %d", tx.At(1).Amount())
+	if tx.GetOutput(1).Amount() != 42130042 {
+		t.Errorf("expected second output amount 42130042, got %d", tx.GetOutput(1).Amount())
 	}
 
-	for i := 0; i < tx.Len(); i++ {
-		t.Logf("output %d amount: %d", i, tx.At(i).Amount())
+	for i := 0; i < tx.CountOutputs(); i++ {
+		t.Logf("output %d amount: %d", i, tx.GetOutput(i).Amount())
 	}
 }

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -60,7 +59,7 @@ BTCK_API struct BtcK_ScriptPubkey* BtcK_ScriptPubkey_Retain(
 
 BTCK_API void BtcK_ScriptPubkey_Release(struct BtcK_ScriptPubkey* self);
 
-BTCK_API bool BtcK_ScriptPubkey_Equal(
+BTCK_API int BtcK_ScriptPubkey_Equal(
   struct BtcK_ScriptPubkey const* left, struct BtcK_ScriptPubkey const* right);
 
 BTCK_API void const* BtcK_ScriptPubkey_AsBytes(
@@ -95,7 +94,7 @@ BTCK_API struct BtcK_Transaction* BtcK_Transaction_Retain(
 BTCK_API void BtcK_Transaction_Release(struct BtcK_Transaction* self);
 
 BTCK_API size_t
-BtcK_Transaction_NumOutputs(struct BtcK_Transaction const* self);
+BtcK_Transaction_CountOutputs(struct BtcK_Transaction const* self);
 
 BTCK_API struct BtcK_TransactionOutput* BtcK_Transaction_GetOutput(
   struct BtcK_Transaction const* self, size_t idx);
@@ -159,7 +158,7 @@ typedef uint32_t BtcK_VerificationFlags;
 BTCK_API int BtcK_VerificationFlags_ToString(
   BtcK_VerificationFlags flags, char* buf, size_t len);
 
-BTCK_API bool BtcK_Verify(
+BTCK_API int BtcK_Verify(
   struct BtcK_ScriptPubkey const* script_pubkey, int64_t amount,
   struct BtcK_Transaction const* tx_to,
   struct BtcK_TransactionOutput const* const* spent_outputs,
@@ -185,7 +184,7 @@ BTCK_API void BtcK_Block_Release(struct BtcK_Block* self);
 BTCK_API void BtcK_Block_GetHash(
   struct BtcK_Block const* self, struct BtcK_BlockHash* out);
 
-BTCK_API size_t BtcK_Block_NumTransactions(struct BtcK_Block const* self);
+BTCK_API size_t BtcK_Block_CountTransactions(struct BtcK_Block const* self);
 
 BTCK_API struct BtcK_Transaction* BtcK_Block_GetTransaction(
   struct BtcK_Block const* self, size_t idx);
@@ -291,7 +290,7 @@ typedef uint8_t BtcK_ChainType;
 BTCK_API struct BtcK_Chain* BtcK_Chain_Retain(struct BtcK_Chain* self);
 BTCK_API void BtcK_Chain_Release(struct BtcK_Chain* self);
 
-BTCK_API size_t BtcK_Chain_NumBlocks(struct BtcK_Chain const* self);
+BTCK_API size_t BtcK_Chain_CountBlocks(struct BtcK_Chain const* self);
 BTCK_API struct BtcK_Block* BtcK_Chain_GetBlock(
   struct BtcK_Chain const* self, size_t idx);
 BTCK_API ptrdiff_t BtcK_Chain_FindBlock(
