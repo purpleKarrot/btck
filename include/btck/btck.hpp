@@ -274,19 +274,14 @@ public:
 
   auto operator=(wrapper const& other) -> wrapper&
   {
-    if (this != &other) {
-      ownership_traits::free(ptr_);
-      ptr_ = ownership_traits::copy(other.ptr_);
-    }
+    std::swap(ptr_, wrapper(other).ptr_);
     return *this;
   }
 
   auto operator=(wrapper&& other) noexcept -> wrapper&
   {
-    if (this != &other) {
-      ownership_traits::free(ptr_);
-      ptr_ = std::exchange(other.ptr_, nullptr);
-    }
+    ownership_traits::free(ptr_);
+    ptr_ = std::exchange(other.ptr_, nullptr);
     return *this;
   }
 
