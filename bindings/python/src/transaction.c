@@ -19,24 +19,11 @@ struct Self {
 
 static void dealloc(struct Self* self);
 static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
-static PyObject* get_outputs_slice(struct Self const* self, void* closure);
-
-static Py_ssize_t num_outputs(struct Self const* self);
-static PyObject* get_output(struct Self* self, Py_ssize_t idx);
+static PyObject* get_outputs(struct Self const* self, void* closure);
 
 static PyGetSetDef getset[] = {
-  {"outputs", (getter)get_outputs_slice, NULL, "", NULL},
+  {"outputs", (getter)get_outputs, NULL, "", NULL},
   {},
-};
-
-static PySequenceMethods output_as_sequence = {
-  .sq_length = (lenfunc)num_outputs,
-  .sq_item = (ssizeargfunc)get_output,
-};
-
-static PyMappingMethods output_as_mapping = {
-  .mp_length = (lenfunc)num_outputs,
-  .mp_subscript = Slice_subscript,
 };
 
 PyTypeObject Transaction_Type = {
@@ -48,16 +35,6 @@ PyTypeObject Transaction_Type = {
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
   .tp_getset = getset,
-};
-
-PyTypeObject Transaction_OutputsSlice_Type = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  .tp_name = "btck._Slice[TransactionOutput]",
-  .tp_basicsize = sizeof(struct Self),
-  .tp_dealloc = (destructor)dealloc,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_as_sequence = &output_as_sequence,
-  .tp_as_mapping = &output_as_mapping,
 };
 
 static void dealloc(struct Self* self)
@@ -79,30 +56,16 @@ static PyObject* new(
   return Transaction_New(BtcK_Transaction_New(buffer.buf, buffer.len, NULL));
 }
 
-static PyObject* get_outputs_slice(
-  struct Self const* self, void* Py_UNUSED(closure))
+static PyObject* outputs_item(struct Self* self, Py_ssize_t idx)
 {
-  struct Self* slice =
-    PyObject_New(struct Self, &Transaction_OutputsSlice_Type);
-  if (slice == NULL) {
-    return NULL;
-  }
-  slice->impl = BtcK_Transaction_Retain(self->impl);
-  return (PyObject*)slice;
-}
-
-static Py_ssize_t num_outputs(struct Self const* self)
-{
-  return (Py_ssize_t)BtcK_Transaction_CountOutputs(self->impl);
-}
-
-static PyObject* get_output(struct Self* self, Py_ssize_t idx)
-{
-  if (idx < 0 || idx >= num_outputs(self)) {
-    PyErr_SetString(PyExc_IndexError, "index out of range");
-    return NULL;
-  }
   return TransactionOutput_New(BtcK_Transaction_GetOutput(self->impl, idx));
+}
+
+static PyObject* get_outputs(struct Self const* self, void* Py_UNUSED(closure))
+{
+  Py_ssize_t const length =
+    (Py_ssize_t)BtcK_Transaction_CountOutputs(self->impl);
+  return Slice_New((PyObject*)self, length, (ssizeargfunc)outputs_item);
 }
 
 PyObject* Transaction_New(struct BtcK_Transaction* tx)

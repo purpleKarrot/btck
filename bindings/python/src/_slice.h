@@ -6,4 +6,4 @@
 
 extern PyTypeObject Slice_Type;
 
-PyObject* Slice_subscript(PyObject* self, PyObject* arg);
+PyObject* Slice_New(PyObject* obj, Py_ssize_t length, ssizeargfunc item);

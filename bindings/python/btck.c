@@ -108,13 +108,10 @@ static PyObject* verify_script(
 static PyTypeObject* const types[] = {
   &Slice_Type,
   &Block_Type,
-  &Block_TransactionsSlice_Type,
   &BlockHash_Type,
   &Chain_Type,
-  &Chain_BlocksSlice_Type,
   &ScriptPubkey_Type,
   &Transaction_Type,
-  &Transaction_OutputsSlice_Type,
   &TransactionOutput_Type,
   &VerificationFlags_Type,
 };

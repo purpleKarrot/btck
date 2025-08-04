@@ -7,4 +7,3 @@
 #include <Python.h>
 
 extern PyTypeObject Chain_Type;
-extern PyTypeObject Chain_BlocksSlice_Type;

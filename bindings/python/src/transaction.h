@@ -9,7 +9,6 @@
 struct BtcK_Transaction;
 
 extern PyTypeObject Transaction_Type;
-extern PyTypeObject Transaction_OutputsSlice_Type;
 
 PyObject* Transaction_New(struct BtcK_Transaction* tx);
 struct BtcK_Transaction* Transaction_GetImpl(PyObject* object);

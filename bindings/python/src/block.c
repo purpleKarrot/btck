@@ -20,24 +20,11 @@ struct Self {
 static void dealloc(struct Self* self);
 static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
 static PyObject* get_hash(struct Self const* self, void* closure);
-static PyObject* get_transactions_slice(struct Self const* self, void* closure);
-
-static Py_ssize_t num_transactions(struct Self const* self);
-static PyObject* get_transaction(struct Self* self, Py_ssize_t idx);
-
-static PySequenceMethods transactions_as_sequence = {
-  .sq_length = (lenfunc)num_transactions,
-  .sq_item = (ssizeargfunc)get_transaction,
-};
-
-static PyMappingMethods transactions_as_mapping = {
-  .mp_length = (lenfunc)num_transactions,
-  .mp_subscript = Slice_subscript,
-};
+static PyObject* get_transactions(struct Self const* self, void* closure);
 
 static PyGetSetDef getset[] = {
   {"hash", (getter)get_hash, NULL, "", NULL},
-  {"transactions", (getter)get_transactions_slice, NULL, "", NULL},
+  {"transactions", (getter)get_transactions, NULL, "", NULL},
   {},
 };
 
@@ -50,16 +37,6 @@ PyTypeObject Block_Type = {
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
   .tp_getset = getset,
-};
-
-PyTypeObject Block_TransactionsSlice_Type = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  .tp_name = "btck._Slice[Transaction]",
-  .tp_basicsize = sizeof(struct Self),
-  .tp_dealloc = (destructor)dealloc,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_as_sequence = &transactions_as_sequence,
-  .tp_as_mapping = &transactions_as_mapping,
 };
 
 static void dealloc(struct Self* self)
@@ -88,29 +65,17 @@ static PyObject* get_hash(struct Self const* self, void* Py_UNUSED(closure))
   return BlockHash_New(&hash);
 }
 
-static PyObject* get_transactions_slice(
+static PyObject* transactions_item(struct Self* self, Py_ssize_t idx)
+{
+  return Transaction_New(BtcK_Block_GetTransaction(self->impl, idx));
+}
+
+static PyObject* get_transactions(
   struct Self const* self, void* Py_UNUSED(closure))
 {
-  struct Self* slice = PyObject_New(struct Self, &Block_TransactionsSlice_Type);
-  if (slice == NULL) {
-    return NULL;
-  }
-  slice->impl = BtcK_Block_Retain(self->impl);
-  return (PyObject*)slice;
-}
-
-static Py_ssize_t num_transactions(struct Self const* self)
-{
-  return (Py_ssize_t)BtcK_Block_CountTransactions(self->impl);
-}
-
-static PyObject* get_transaction(struct Self* self, Py_ssize_t idx)
-{
-  if (idx < 0 || idx >= num_transactions(self)) {
-    PyErr_SetString(PyExc_IndexError, "index out of range");
-    return NULL;
-  }
-  return Transaction_New(BtcK_Block_GetTransaction(self->impl, idx));
+  Py_ssize_t const length =
+    (Py_ssize_t)BtcK_Block_CountTransactions(self->impl);
+  return Slice_New((PyObject*)self, length, (ssizeargfunc)transactions_item);
 }
 
 PyObject* Block_New(struct BtcK_Block* block)
