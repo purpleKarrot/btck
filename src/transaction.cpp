@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <memory>
 #include <span>
+#include <string>
 #include <utility>
 
 #include "span.h"
@@ -32,7 +33,6 @@ auto make(std::span<std::byte const> raw)
 
 BtcK_Transaction::BtcK_Transaction(CTransactionRef arg)
   : transaction{std::move(arg)}
-  , string{transaction->ToString()}
 {
   // TODO: do we even need this serialzed?
 }
@@ -40,7 +40,6 @@ BtcK_Transaction::BtcK_Transaction(CTransactionRef arg)
 BtcK_Transaction::BtcK_Transaction(std::span<std::byte const> raw)
   : transaction{make(raw)}
   , serialized(raw.begin(), raw.end())
-  , string(transaction->ToString())
 {}
 
 extern "C" {
@@ -86,13 +85,12 @@ auto BtcK_Transaction_AsBytes(BtcK_Transaction const* self, std::size_t* len)
   return util::AsBytes(self->serialized, len);
 }
 
-auto BtcK_Transaction_ToString(BtcK_Transaction const* self, std::size_t* len)
-  -> char const*
+auto BtcK_Transaction_ToString(
+  BtcK_Transaction const* self, char* buf, size_t len) -> int
 {
-  if (len != nullptr) {
-    *len = self->string.size();
-  }
-  return self->string.c_str();
+  auto const str = self->transaction->ToString();
+  str.copy(buf, len);
+  return static_cast<int>(str.size());
 }
 
 }  // extern "C"

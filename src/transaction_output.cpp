@@ -6,8 +6,10 @@
 
 #include <btck/btck.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <span>
+#include <string>
 
 #include "primitives/transaction.h"
 #include "script_pubkey.hpp"
@@ -49,6 +51,14 @@ auto BtcK_TransactionOutput_GetScriptPubkey(
 {
   return util::WrapFn(
     err, [=] { return new BtcK_ScriptPubkey{self->tx_out.scriptPubKey}; });
+}
+
+auto BtcK_TransactionOutput_ToString(
+  BtcK_TransactionOutput const* self, char* buf, size_t len) -> int
+{
+  auto const str = self->tx_out.ToString();
+  str.copy(buf, len);
+  return static_cast<int>(str.size());
 }
 
 }  // extern "C"

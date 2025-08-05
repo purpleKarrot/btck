@@ -322,6 +322,24 @@ constexpr auto const get_impl = get_impl_{};
 }  // namespace btck::detail
 
 /******************************************************************************/
+// MARK: to_string
+
+namespace btck::detail {
+
+template <typename T> auto to_string(T obj, int (*printfn)(T, char*, size_t))
+{
+  auto const len = printfn(obj, nullptr, 0);
+  if (len < 0) {
+    throw std::runtime_error("to_string failed");
+  }
+  auto buf = std::string(static_cast<std::string::size_type>(len), '\0');
+  printfn(obj, buf.data(), len + 1);
+  return buf;
+}
+
+}  // namespace btck::detail
+
+/******************************************************************************/
 // MARK: out_ptr
 
 namespace btck::detail {
@@ -465,13 +483,7 @@ enum class verification_flags : BtcK_VerificationFlags {
 inline auto to_string(verification_flags flags)
 {
   auto const cflags = static_cast<BtcK_VerificationFlags>(flags);
-  auto const len = BtcK_VerificationFlags_ToString(cflags, nullptr, 0);
-  if (len < 0) {
-    throw std::runtime_error("BtcK_VerificationFlags_ToString failed");
-  }
-  auto buf = std::string(static_cast<std::string::size_type>(len), '\0');
-  BtcK_VerificationFlags_ToString(cflags, buf.data(), len + 1);
-  return buf;
+  return detail::to_string(cflags, BtcK_VerificationFlags_ToString);
 }
 
 }  // namespace btck
@@ -627,6 +639,11 @@ public:
   }
 
 private:
+  friend auto to_string(transaction_output_api const& self)
+  {
+    return detail::to_string(self.impl(), BtcK_TransactionOutput_ToString);
+  }
+
   [[nodiscard]] auto impl() const
   {
     return static_cast<Derived const*>(this)->get();
@@ -720,11 +737,9 @@ private:
     return detail::as_bytes(data, len);
   }
 
-  friend auto to_string(transaction_api const& self) -> std::string_view
+  friend auto to_string(transaction_api const& self)
   {
-    auto len = std::size_t{};
-    char const* data = BtcK_Transaction_ToString(self.impl(), &len);
-    return {data, len};
+    return detail::to_string(self.impl(), BtcK_Transaction_ToString);
   }
 
   [[nodiscard]] auto impl() const
@@ -886,6 +901,11 @@ private:
     auto len = std::size_t{};
     auto const* data = BtcK_Block_AsBytes(self.impl(), &len);
     return detail::as_bytes(data, len);
+  }
+
+  friend auto to_string(block_api const& self)
+  {
+    return detail::to_string(self.impl(), BtcK_Block_ToString);
   }
 
   [[nodiscard]] auto impl() const

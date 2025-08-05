@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <span>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "node/blockstorage.h"
@@ -92,6 +93,13 @@ void BtcK_BlockHash_Init(
   assert(len == BtcK_BlockHash_SIZE);
   std::copy_n(
     reinterpret_cast<std::uint8_t const*>(raw), sizeof(self->data), self->data);
+}
+
+auto BtcK_Block_ToString(BtcK_Block const* self, char* buf, size_t len) -> int
+{
+  auto const str = self->block.ToString();
+  str.copy(buf, len);
+  return static_cast<int>(str.size());
 }
 
 }  // extern "C"

@@ -74,4 +74,26 @@ TEST(Block, Genesis)
       EXPECT_EQ(txout.amount(), 50'00000000);
     }
   }
+
+  EXPECT_EQ(
+    to_string(block),
+    R"(CBlock(hash=0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206, ver=0x00000001, hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, hashMerkleRoot=4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b, nTime=1296688602, nBits=207fffff, nNonce=2, vtx=1)
+  CTransaction(hash=4a5e1e4baa, ver=1, vin.size=1, vout.size=1, nLockTime=0)
+    CTxIn(COutPoint(0000000000, 4294967295), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
+    CScriptWitness()
+    CTxOut(nValue=50.00000000, scriptPubKey=4104678afdb0fe5548271967f1a671)
+
+)");
+
+  EXPECT_EQ(
+    to_string(tx),
+    R"(CTransaction(hash=4a5e1e4baa, ver=1, vin.size=1, vout.size=1, nLockTime=0)
+    CTxIn(COutPoint(0000000000, 4294967295), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
+    CScriptWitness()
+    CTxOut(nValue=50.00000000, scriptPubKey=4104678afdb0fe5548271967f1a671)
+)");
+
+  EXPECT_EQ(
+    to_string(txout),
+    "CTxOut(nValue=50.00000000, scriptPubKey=4104678afdb0fe5548271967f1a671)");
 }

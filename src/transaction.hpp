@@ -8,7 +8,6 @@
 
 #include <cstddef>
 #include <span>
-#include <string>
 #include <vector>
 
 #include "util/ref_counted.hpp"
@@ -19,5 +18,4 @@ struct BtcK_Transaction : util::RefCounted<BtcK_Transaction> {
 
   CTransactionRef transaction;
   std::vector<std::byte> serialized;
-  std::string string;
 };
