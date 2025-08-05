@@ -65,7 +65,7 @@ jobject Java_Transaction_get(JNIEnv* env, jobject self, jint idx)
   }
 
   struct BtcK_TransactionOutput* out =
-    BtcK_Transaction_GetOutput(ptr, (size_t)idx);
+    BtcK_Transaction_GetOutput(ptr, (size_t)idx, NULL);
   if (out == NULL) {
     return NULL;
   }

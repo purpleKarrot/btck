@@ -71,10 +71,13 @@ auto BtcK_Transaction_CountOutputs(BtcK_Transaction const* self) -> std::size_t
   return self->transaction->vout.size();
 }
 
-auto BtcK_Transaction_GetOutput(BtcK_Transaction const* self, std::size_t idx)
+auto BtcK_Transaction_GetOutput(
+  BtcK_Transaction const* self, std::size_t idx, struct BtcK_Error** err)
   -> BtcK_TransactionOutput*
 {
-  return BtcK_TransactionOutput::New(self->transaction->vout[idx]);
+  return util::WrapFn(err, [=] {
+    return BtcK_TransactionOutput::New(self->transaction->vout[idx]);
+  });
 }
 
 auto BtcK_Transaction_AsBytes(BtcK_Transaction const* self, std::size_t* len)

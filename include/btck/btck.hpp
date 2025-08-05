@@ -684,7 +684,10 @@ public:
 
   [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
   {
-    return {detail::internal, BtcK_Transaction_GetOutput(this->impl(), idx)};
+    return {
+      detail::internal,
+      detail::invoke(BtcK_Transaction_GetOutput, this->impl(), idx),
+    };
   }
 
 private:
@@ -843,7 +846,10 @@ public:
 
   [[nodiscard]] auto operator[](std::size_t idx) const -> value_type
   {
-    return {detail::internal, BtcK_Block_GetTransaction(this->impl(), idx)};
+    return {
+      detail::internal,
+      detail::invoke(BtcK_Block_GetTransaction, this->impl(), idx),
+    };
   }
 
 private:
@@ -1010,7 +1016,10 @@ public:
 
   [[nodiscard]] auto operator[](std::size_t height) const -> value_type
   {
-    return {detail::internal, BtcK_Chain_GetBlock(this->impl_.get(), height)};
+    return {
+      detail::internal,
+      detail::invoke(BtcK_Chain_GetBlock, this->impl_.get(), height),
+    };
   }
 
   [[nodiscard]] auto find(BlockHash const& block_hash) const -> iterator

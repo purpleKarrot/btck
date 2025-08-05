@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 
+#include "_error.h"
 #include "_slice.h"
 #include "block.h"
 #include "block_hash.h"
@@ -44,7 +45,7 @@ PyTypeObject Chain_Type = {
   .tp_basicsize = sizeof(struct Self),
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_methods = blocks_methods, // TODO: Would be nicer at blocks
+  .tp_methods = blocks_methods,  // TODO: Would be nicer at blocks
   .tp_new = new,
   .tp_getset = getset,
 };
@@ -95,7 +96,12 @@ static PyObject* new(
 
 static PyObject* block_item(struct Self* self, Py_ssize_t idx)
 {
-  return Block_New(BtcK_Chain_GetBlock(self->impl, idx));
+  struct BtcK_Error* err = NULL;
+  struct BtcK_Block* ptr = BtcK_Chain_GetBlock(self->impl, idx, &err);
+  if (err != NULL) {
+    return SetError(err);
+  }
+  return Block_New(ptr);
 }
 
 static PyObject* get_blocks(struct Self const* self, void* Py_UNUSED(closure))

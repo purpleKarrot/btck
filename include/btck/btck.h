@@ -34,7 +34,7 @@ struct BtcK_TransactionOutput;
 struct BtcK_Error;
 
 BTCK_API struct BtcK_Error* BtcK_Error_New(
-  char const* domain, int code, char const* message);
+  int code, char const* domain, char const* message);
 
 BTCK_API void BtcK_Error_Free(struct BtcK_Error* error);
 
@@ -96,7 +96,7 @@ BTCK_API size_t
 BtcK_Transaction_CountOutputs(struct BtcK_Transaction const* self);
 
 BTCK_API struct BtcK_TransactionOutput* BtcK_Transaction_GetOutput(
-  struct BtcK_Transaction const* self, size_t idx);
+  struct BtcK_Transaction const* self, size_t idx, struct BtcK_Error** err);
 
 BTCK_API void const* BtcK_Transaction_AsBytes(
   struct BtcK_Transaction const* self, size_t* len);
@@ -169,8 +169,6 @@ BTCK_API int BtcK_Verify(
 BTCK_API void BtcK_BlockHash_Init(
   struct BtcK_BlockHash* self, void const* raw, size_t len);
 
-// auto as_bytes(BlockHash const& self) -> std::span<std::byte const, 32>;
-
 /*****************************************************************************/
 
 BTCK_API struct BtcK_Block* BtcK_Block_New(
@@ -187,7 +185,7 @@ BTCK_API void BtcK_Block_GetHash(
 BTCK_API size_t BtcK_Block_CountTransactions(struct BtcK_Block const* self);
 
 BTCK_API struct BtcK_Transaction* BtcK_Block_GetTransaction(
-  struct BtcK_Block const* self, size_t idx);
+  struct BtcK_Block const* self, size_t idx, struct BtcK_Error** err);
 
 BTCK_API void const* BtcK_Block_AsBytes(
   struct BtcK_Block const* self, size_t* len);
@@ -291,7 +289,7 @@ BTCK_API void BtcK_Chain_Free(struct BtcK_Chain* self);
 
 BTCK_API size_t BtcK_Chain_CountBlocks(struct BtcK_Chain const* self);
 BTCK_API struct BtcK_Block* BtcK_Chain_GetBlock(
-  struct BtcK_Chain const* self, size_t idx);
+  struct BtcK_Chain const* self, size_t idx, struct BtcK_Error** err);
 BTCK_API ptrdiff_t BtcK_Chain_FindBlock(
   struct BtcK_Chain const* self, struct BtcK_BlockHash const* block_hash);
 

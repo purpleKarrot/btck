@@ -21,8 +21,7 @@ const data : array of uint8 = {
 }
 
 def test_transaction()
-	error: BtcK.Error
-	var tx = new BtcK.Transaction(data, out error)
+	var tx = new BtcK.Transaction(data)
 
 	assert tx.size == 2
 	assert tx[0].amount == 20737411

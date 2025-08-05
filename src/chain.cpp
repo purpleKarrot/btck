@@ -14,6 +14,7 @@
 #include "node/blockstorage.h"
 #include "span.h"
 #include "uint256.h"
+#include "util/error.hpp"
 
 //   // poor man's cpp support for named arguments
 //   struct KwArgs
@@ -46,10 +47,14 @@ auto BtcK_Chain_CountBlocks(BtcK_Chain const* self) -> std::size_t
   return self->chainstate_manager.ActiveChain().Height();
 }
 
-auto BtcK_Chain_GetBlock(BtcK_Chain const* self, std::size_t idx) -> BtcK_Block*
+auto BtcK_Chain_GetBlock(
+  BtcK_Chain const* self, std::size_t idx, struct BtcK_Error** err)
+  -> BtcK_Block*
 {
-  CBlockIndex* bi = self->chainstate_manager.ActiveChain()[int(idx)];
-  return BtcK_Block::New(*bi, self->chainstate_manager.m_blockman);
+  return util::WrapFn(err, [=] {
+    CBlockIndex* bi = self->chainstate_manager.ActiveChain()[int(idx)];
+    return BtcK_Block::New(*bi, self->chainstate_manager.m_blockman);
+  });
 }
 
 auto BtcK_Chain_FindBlock(

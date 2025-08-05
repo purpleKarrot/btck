@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "_error.h"
 #include "_slice.h"
 #include "transaction_output.h"
 
@@ -58,7 +59,13 @@ static PyObject* new(
 
 static PyObject* outputs_item(struct Self* self, Py_ssize_t idx)
 {
-  return TransactionOutput_New(BtcK_Transaction_GetOutput(self->impl, idx));
+  struct BtcK_Error* err = NULL;
+  struct BtcK_TransactionOutput* ptr =
+    BtcK_Transaction_GetOutput(self->impl, idx, &err);
+  if (err != NULL) {
+    return SetError(err);
+  }
+  return TransactionOutput_New(ptr);
 }
 
 static PyObject* get_outputs(struct Self const* self, void* Py_UNUSED(closure))

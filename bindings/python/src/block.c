@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 
+#include "_error.h"
 #include "_slice.h"
 #include "block_hash.h"
 #include "transaction.h"
@@ -67,7 +68,13 @@ static PyObject* get_hash(struct Self const* self, void* Py_UNUSED(closure))
 
 static PyObject* transactions_item(struct Self* self, Py_ssize_t idx)
 {
-  return Transaction_New(BtcK_Block_GetTransaction(self->impl, idx));
+  struct BtcK_Error* err = NULL;
+  struct BtcK_Transaction* ptr =
+    BtcK_Block_GetTransaction(self->impl, idx, &err);
+  if (err != NULL) {
+    return SetError(err);
+  }
+  return Transaction_New(ptr);
 }
 
 static PyObject* get_transactions(

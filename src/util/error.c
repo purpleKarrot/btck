@@ -14,22 +14,22 @@ struct BtcK_Error {
 };
 
 static struct BtcK_Error OOM_ERROR = {
+  .code = -1,
   .domain = "Memory",
   .message = "Out of memory",
-  .code = -1,
 };
 
 struct BtcK_Error* BtcK_Error_New(
-  char const* domain, int code, char const* message)
+  int code, char const* domain, char const* message)
 {
   struct BtcK_Error* err = malloc(sizeof(struct BtcK_Error));
   if (err == NULL) {
     return &OOM_ERROR;
   }
 
+  err->code = code;
   err->domain = domain ? strdup(domain) : NULL;
   err->message = message ? strdup(message) : NULL;
-  err->code = code;
 
   if ((domain && !err->domain) || (message && !err->message)) {
     BtcK_Error_Free(err);
