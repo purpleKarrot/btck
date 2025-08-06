@@ -231,9 +231,21 @@ jobs:
 
           ctest_submit(PARTS "Done")
 
-      - name: Deploy docs to GitHub Pages
+      - name: Upload Pages artifact
         if: github.ref == 'refs/heads/master' && matrix.name == 'Linux-GCC'
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/doc/html
+          path: build/doc/html
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
