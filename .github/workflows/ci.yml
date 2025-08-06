@@ -27,7 +27,10 @@ jobs:
               libcmocka-dev
               libgtest-dev
               liblua5.2-dev
+            python-packages: >
               mypy
+              pytest
+              sphinx
             env:
               CC: gcc-14
               CXX: g++-14
@@ -40,7 +43,6 @@ jobs:
               ccache
               cmocka
               googletest
-              mypy
             env:
               CC: clang
               CXX: clang++
@@ -73,7 +75,9 @@ jobs:
               libcmocka-dev
               libgtest-dev
               liblua5.2-dev
+            python-packages:
               mypy
+              pytest
             config-options: >
               -DBTCK_ENABLE_JAVA=ON
               -DBTCK_ENABLE_LUA=ON
@@ -92,7 +96,9 @@ jobs:
               libcmocka-dev
               libgtest-dev
               liblua5.2-dev
+            python-packages:
               mypy
+              pytest
             config-options: >
               -DBTCK_ENABLE_JAVA=ON
               -DBTCK_ENABLE_LUA=ON
@@ -122,12 +128,14 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Set up latest Python
+        if: matrix.python-packages
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Setup pytest
-        run: pip install pytest
+      - name: Install Python Packages
+        if: matrix.python-packages
+        run: pip install ${{ matrix.python-packages }}
 
       - name: Compiler Cache
         uses: actions/cache@v4
