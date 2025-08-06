@@ -4,12 +4,20 @@
 
 enable_language(Swift)
 
-include(FetchContent)
-FetchContent_Declare(SwiftTesting
-  GIT_REPOSITORY https://github.com/swiftlang/swift-testing.git
-  GIT_TAG swift-6.1.1-RELEASE
-  )
-FetchContent_MakeAvailable(SwiftTesting)
+block()
+  set(CMAKE_C_CLANG_TIDY "")
+  set(CMAKE_C_INCLUDE_WHAT_YOU_USE "")
+  set(CMAKE_CXX_CLANG_TIDY "")
+  set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "")
+  set(CMAKE_LINK_WHAT_YOU_USE "")
+
+  include(FetchContent)
+  FetchContent_Declare(SwiftTesting
+    GIT_REPOSITORY https://github.com/swiftlang/swift-testing.git
+    GIT_TAG swift-6.1.1-RELEASE
+    )
+  FetchContent_MakeAvailable(SwiftTesting)
+endblock()
 
 add_executable(btck_test_swift
   test_main.swift
