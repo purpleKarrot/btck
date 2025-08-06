@@ -1,10 +1,12 @@
 BtcK Documentation
 ==================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
-
+BtcK is a proof-of-concept interface for the Bitcoin Kernel library. Its primary
+goal is to provide consistent APIs across multiple programming languages, while
+striving to make each API idiomatic for its target language. This means that
+developers can expect the interface to follow the conventions and best practices
+of the language they are using, resulting in a more natural and intuitive
+experience.
 
 Design
 ######
