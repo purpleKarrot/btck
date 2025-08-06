@@ -37,9 +37,13 @@ func (t *Transaction) CountOutputs() int {
 	return int(C.BtcK_Transaction_CountOutputs(t.ptr))
 }
 
-func (t *Transaction) GetOutput(idx int) *TransactionOutput {
-	ptr := C.BtcK_Transaction_GetOutput(t.ptr, C.size_t(idx))
-	return newTransactionOutputFinalized(ptr)
+func (t *Transaction) GetOutput(idx int) (*TransactionOutput, error) {
+	var err *C.struct_BtcK_Error
+	ptr := C.BtcK_Transaction_GetOutput(t.ptr, C.size_t(idx), &err)
+	if err != nil {
+		return nil, newError(err)
+	}
+	return newTransactionOutputFinalized(ptr), nil
 }
 
 func (t *Transaction) Bytes() []byte {

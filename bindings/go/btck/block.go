@@ -49,8 +49,13 @@ func (b *Block) CountTransactions() int {
 	return int(C.BtcK_Block_CountTransactions(b.ptr))
 }
 
-func (b *Block) GetTransaction(idx int) *Transaction {
-	return &Transaction{C.BtcK_Block_GetTransaction(b.ptr, C.size_t(idx))}
+func (b *Block) GetTransaction(idx int) (*Transaction, error) {
+	var err *C.struct_BtcK_Error
+	ptr := C.BtcK_Block_GetTransaction(b.ptr, C.size_t(idx), &err)
+	if err != nil {
+		return nil, newError(err)
+	}
+	return newTransactionFinalized(ptr), nil
 }
 
 func (b *Block) Bytes() []byte {

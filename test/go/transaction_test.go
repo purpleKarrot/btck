@@ -34,15 +34,18 @@ func TestTransaction(t *testing.T) {
 		t.Fatalf("expected 2 outputs, got %d", tx.CountOutputs())
 	}
 
-	if tx.GetOutput(0).Amount() != 20737411 {
-		t.Errorf("expected first output amount 20737411, got %d", tx.GetOutput(0).Amount())
+	txout0, _ := tx.GetOutput(0)
+	if txout0.Amount() != 20737411 {
+		t.Errorf("expected first output amount 20737411, got %d", txout0.Amount())
 	}
 
-	if tx.GetOutput(1).Amount() != 42130042 {
-		t.Errorf("expected second output amount 42130042, got %d", tx.GetOutput(1).Amount())
+	txout1, _ := tx.GetOutput(1)
+	if txout1.Amount() != 42130042 {
+		t.Errorf("expected second output amount 42130042, got %d", txout1.Amount())
 	}
 
 	for i := 0; i < tx.CountOutputs(); i++ {
-		t.Logf("output %d amount: %d", i, tx.GetOutput(i).Amount())
+		txout, _ := tx.GetOutput(i)
+		t.Logf("output %d amount: %d", i, txout.Amount())
 	}
 }
