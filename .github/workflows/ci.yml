@@ -13,6 +13,14 @@ jobs:
         include:
           - name: Linux
             runs-on: ubuntu-latest
+            config-options: >
+              -DBTCK_BUILD_DOC=ON
+              -DBTCK_ENABLE_GO=ON
+              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_LUA=ON
+              -DBTCK_ENABLE_PYTHON=ON
+              -DBTCK_ENABLE_RUST=ON
+              -DBTCK_ENABLE_SWIFT=ON
             dependencies: >
               ccache
               libboost-dev
@@ -26,6 +34,8 @@ jobs:
 
           - name: macOS
             runs-on: macos-15
+            config-options: >
+              -DBTCK_ENABLE_SWIFT=ON
             dependencies: >
               boost
               ccache
@@ -65,6 +75,9 @@ jobs:
               libgtest-dev
               mypy
             config-options: >
+              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_LUA=ON
+              -DBTCK_ENABLE_PYTHON=ON
               -DBTCK_RUN_IWYU=ON
               -DCMAKE_LINK_WHAT_YOU_USE=ON
             env:
@@ -80,6 +93,9 @@ jobs:
               libgtest-dev
               mypy
             config-options: >
+              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_LUA=ON
+              -DBTCK_ENABLE_PYTHON=ON
               -DCMAKE_C_CLANG_TIDY=clang-tidy-18
               -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
             env:
