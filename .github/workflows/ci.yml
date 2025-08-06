@@ -31,6 +31,7 @@ jobs:
               mypy
               pytest
               sphinx
+              sphinx-tabs
             env:
               CC: gcc-14
               CXX: g++-14
