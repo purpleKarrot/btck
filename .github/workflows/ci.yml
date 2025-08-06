@@ -27,6 +27,7 @@ jobs:
               libgtest-dev
               liblua5.4-dev
             python-packages: >
+              furo
               mypy
               pytest
               sphinx

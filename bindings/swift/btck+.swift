@@ -22,19 +22,24 @@ extension Transaction: RandomAccessCollection {
     public func index(before i: Int) -> Int { i - 1 }
 
     public subscript(position: Int) -> TransactionOutput {
-        guard let output = BtcK_Transaction_GetOutput(ptr, position) else {
-            fatalError("Index out of bounds")
+        var err: OpaquePointer? = nil
+        let ptr = BtcK_Transaction_GetOutput(ptr, position, &err)
+        if let err {
+            fatalError("\(BtcKError(err))")
         }
-        return TransactionOutput(ptr: output)
+        return TransactionOutput(ptr: ptr!)
     }
 }
 
 extension Transaction: CustomStringConvertible {
     public var description: String {
-        var len: size_t = 0
-        guard let cstr = BtcK_Transaction_ToString(ptr, &len) else { return "" }
-        let data = Data(bytes: cstr, count: Int(len))
-        return String(data: data, encoding: .utf8) ?? ""
+        let len = BtcK_Transaction_ToString(ptr, nil, 0)
+        guard len > 0 else { return "" }
+        let buf = UnsafeMutablePointer<CChar>.allocate(capacity: Int(len) + 1)
+        defer { buf.deallocate() }
+        let written = BtcK_Transaction_ToString(ptr, buf, Int(len) + 1)
+        guard written >= 0 else { return "" }
+        return String(cString: buf)
     }
 }
 
@@ -49,10 +54,12 @@ extension Block: RandomAccessCollection {
     public func index(before i: Int) -> Int { i - 1 }
 
     public subscript(position: Int) -> Transaction {
-        guard let output = BtcK_Block_GetTransaction(ptr, position) else {
-            fatalError("Index out of bounds")
+        var err: OpaquePointer? = nil
+        let ptr = BtcK_Block_GetTransaction(ptr, position, &err)
+        if let err {
+            fatalError("\(BtcKError(err))")
         }
-        return Transaction(ptr: output)
+        return Transaction(ptr: ptr!)
     }
 }
 
@@ -67,9 +74,11 @@ extension Chain: RandomAccessCollection {
     public func index(before i: Int) -> Int { i - 1 }
 
     public subscript(position: Int) -> Block {
-        guard let output = BtcK_Chain_GetBlock(ptr, position) else {
-            fatalError("Index out of bounds")
+        var err: OpaquePointer? = nil
+        let ptr = BtcK_Chain_GetBlock(ptr, position, &err)
+        if let err {
+            fatalError("\(BtcKError(err))")
         }
-        return Block(ptr: output)
+        return Block(ptr: ptr!)
     }
 }
