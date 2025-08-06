@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Linux
+          - name: Linux-GCC
             runs-on: ubuntu-latest
             config-options: >
               -DBTCK_BUILD_DOC=ON
@@ -20,13 +20,12 @@ jobs:
               -DBTCK_ENABLE_LUA=ON
               -DBTCK_ENABLE_PYTHON=ON
               -DBTCK_ENABLE_RUST=ON
-              -DBTCK_ENABLE_SWIFT=ON
             dependencies: >
               ccache
               libboost-dev
               libcmocka-dev
               libgtest-dev
-              liblua5.2-dev
+              liblua5.4-dev
             python-packages: >
               mypy
               pytest
@@ -35,6 +34,20 @@ jobs:
             env:
               CC: gcc-14
               CXX: g++-14
+            cpack-generator: TXZ
+
+          - name: Linux-Clang
+            runs-on: ubuntu-latest
+            config-options: >
+              -DBTCK_ENABLE_SWIFT=ON
+            dependencies: >
+              ccache
+              libboost-dev
+              libcmocka-dev
+              libgtest-dev
+            env:
+              CC: clang
+              CXX: clang++
             cpack-generator: TXZ
 
           - name: macOS
@@ -75,7 +88,7 @@ jobs:
               libboost-dev
               libcmocka-dev
               libgtest-dev
-              liblua5.2-dev
+              liblua5.4-dev
             python-packages:
               mypy
               pytest
@@ -96,7 +109,7 @@ jobs:
               libboost-dev
               libcmocka-dev
               libgtest-dev
-              liblua5.2-dev
+              liblua5.4-dev
             python-packages:
               mypy
               pytest
