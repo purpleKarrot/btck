@@ -26,6 +26,7 @@ jobs:
               libboost-dev
               libcmocka-dev
               libgtest-dev
+              liblua5.2-dev
               mypy
             env:
               CC: gcc-14
@@ -34,8 +35,6 @@ jobs:
 
           - name: macOS
             runs-on: macos-15
-            config-options: >
-              -DBTCK_ENABLE_SWIFT=ON
             dependencies: >
               boost
               ccache
@@ -73,6 +72,7 @@ jobs:
               libboost-dev
               libcmocka-dev
               libgtest-dev
+              liblua5.2-dev
               mypy
             config-options: >
               -DBTCK_ENABLE_JAVA=ON
@@ -91,6 +91,7 @@ jobs:
               libboost-dev
               libcmocka-dev
               libgtest-dev
+              liblua5.2-dev
               mypy
             config-options: >
               -DBTCK_ENABLE_JAVA=ON
