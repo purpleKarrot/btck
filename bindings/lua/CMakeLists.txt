@@ -4,6 +4,14 @@
 
 find_package(Lua REQUIRED)
 
+if(Lua_FOUND AND NOT TARGET Lua::Lua)
+  add_library(Lua::Lua INTERFACE IMPORTED)
+  set_target_properties(Lua::Lua PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${LUA_INCLUDE_DIR}"
+    INTERFACE_LINK_LIBRARIES "${LUA_LIBRARIES}"
+    )
+endif()
+
 add_library(btck-lua MODULE
   btck.c
   #src/block.c
@@ -15,6 +23,7 @@ add_library(btck-lua MODULE
 
 target_link_libraries(btck-lua PRIVATE
   BtcK::btck
+  Lua::Lua
   )
 
 set_target_properties(btck-lua PROPERTIES

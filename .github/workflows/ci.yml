@@ -36,18 +36,51 @@ jobs:
               CXX: g++-14
             cpack-generator: TXZ
 
-          - name: Linux-Clang
+          - name: Linux-Clang17
+            runs-on: ubuntu-latest
+            dependencies: >
+              ccache
+              iwyu
+              libboost-dev
+              libcmocka-dev
+              libgtest-dev
+              liblua5.4-dev
+            python-packages:
+              mypy
+              pytest
+            config-options: >
+              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_LUA=ON
+              -DBTCK_ENABLE_PYTHON=ON
+              -DBTCK_ENABLE_SWIFT=ON
+              -DBTCK_RUN_IWYU=ON
+              -DCMAKE_LINK_WHAT_YOU_USE=ON
+            env:
+              CC: clang-17
+              CXX: clang++-17
+            cpack-generator: TXZ
+
+          - name: Linux-Clang18
             runs-on: ubuntu-latest
             config-options: >
+              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_LUA=ON
+              -DBTCK_ENABLE_PYTHON=ON
               -DBTCK_ENABLE_SWIFT=ON
+              -DCMAKE_C_CLANG_TIDY=clang-tidy-18
+              -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
             dependencies: >
               ccache
               libboost-dev
               libcmocka-dev
               libgtest-dev
+              liblua5.4-dev
+            python-packages: >
+              mypy
+              pytest
             env:
-              CC: clang
-              CXX: clang++
+              CC: clang-18
+              CXX: clang++-18
             cpack-generator: TXZ
 
           - name: macOS
@@ -79,49 +112,6 @@ jobs:
               CXX: cl
               CMAKE_TOOLCHAIN_FILE: C:/vcpkg/scripts/buildsystems/vcpkg.cmake
             cpack-generator: 7Z
-
-          - name: IWYU
-            runs-on: ubuntu-latest
-            dependencies: >
-              ccache
-              iwyu
-              libboost-dev
-              libcmocka-dev
-              libgtest-dev
-              liblua5.4-dev
-            python-packages:
-              mypy
-              pytest
-            config-options: >
-              -DBTCK_ENABLE_JAVA=ON
-              -DBTCK_ENABLE_LUA=ON
-              -DBTCK_ENABLE_PYTHON=ON
-              -DBTCK_RUN_IWYU=ON
-              -DCMAKE_LINK_WHAT_YOU_USE=ON
-            env:
-              CC: clang-17
-              CXX: clang++-17
-
-          - name: Tidy
-            runs-on: ubuntu-latest
-            dependencies: >
-              ccache
-              libboost-dev
-              libcmocka-dev
-              libgtest-dev
-              liblua5.4-dev
-            python-packages:
-              mypy
-              pytest
-            config-options: >
-              -DBTCK_ENABLE_JAVA=ON
-              -DBTCK_ENABLE_LUA=ON
-              -DBTCK_ENABLE_PYTHON=ON
-              -DCMAKE_C_CLANG_TIDY=clang-tidy-18
-              -DCMAKE_CXX_CLANG_TIDY=clang-tidy-18
-            env:
-              CC: clang-18
-              CXX: clang++-18
 
     steps:
       - name: Checkout repository
