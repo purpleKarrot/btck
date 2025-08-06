@@ -230,3 +230,10 @@ jobs:
           endif()
 
           ctest_submit(PARTS "Done")
+
+      - name: Deploy docs to GitHub Pages
+        if: github.ref == 'refs/heads/master' && matrix.name == 'Linux-GCC'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: build/doc/html
