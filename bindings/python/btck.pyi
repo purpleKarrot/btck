@@ -16,6 +16,10 @@ class _Slice[T]:
 
 
 @typing.final
+class VerificationError(ValueError): ...
+
+
+@typing.final
 class VerificationFlags:
     ALL: typing.ClassVar[typing.Self]
     NONE: typing.ClassVar[typing.Self]
@@ -64,6 +68,13 @@ class ScriptPubkey:
     def __eq__(self, other: typing.Any) -> bool: ...
     def __ne__(self, other: typing.Any) -> bool: ...
     def __bytes__(self) -> bytes: ...
+    def verify(self,
+        amount: int,
+        tx_to: Transaction,
+        spent_outputs: typing.Sequence[TransactionOutput] | None = None,
+        input_index: int = 0,
+        flags: VerificationFlags = VerificationFlags.NONE,
+    ) -> bool: ...
 
 
 @typing.final
@@ -77,17 +88,3 @@ class TransactionOutput:
     def __init__(self,  amount: int, script_pubkey: ScriptPubkey): ...
     amount: int
     script_pubkey: ScriptPubkey
-
-
-@typing.final
-class VerificationError(ValueError): ...
-
-
-def verify_script(
-    script_pubkey: ScriptPubkey,
-    amount: int,
-    tx_to: Transaction,
-    spent_outputs: typing.Sequence[TransactionOutput] | None = None,
-    input_index: int = 0,
-    flags: VerificationFlags = VerificationFlags.NONE,
-) -> bool: ...

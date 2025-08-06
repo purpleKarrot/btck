@@ -555,12 +555,21 @@ template <> struct btck::detail::c_api_traits<BtcK_ScriptPubkey> {
 };
 
 namespace btck {
+
+class transaction;
+class transaction_output;
+
 namespace detail {
 
 template <typename Derived> class script_pubkey_api
 {
 public:
   using c_type = BtcK_ScriptPubkey;
+
+  [[nodiscard]] auto verify(
+    std::int64_t amount, transaction const& tx_to,
+    std::span<transaction_output const> spent_outputs, unsigned int input_index,
+    verification_flags flags) const -> bool;
 
 private:
   friend auto operator==(
@@ -765,35 +774,6 @@ public:
         detail::invoke(BtcK_Transaction_New, raw.data(), raw.size())}
   {}
 };
-
-}  // namespace btck
-
-/******************************************************************************/
-// MARK: Verify
-
-namespace btck {
-namespace detail {
-
-struct verify_fn {
-  auto operator()(
-    script_pubkey const& script_pubkey, std::int64_t amount,
-    transaction const& tx_to, std::span<transaction_output const> spent_outputs,
-    unsigned int input_index, verification_flags flags) const -> bool
-  {
-    int const result = detail::invoke(
-      BtcK_Verify, detail::get_impl(script_pubkey), amount,
-      detail::get_impl(tx_to),
-      (spent_outputs.empty() ? nullptr
-                             : detail::get_impl(spent_outputs.data())),
-      spent_outputs.size(), input_index,
-      static_cast<BtcK_VerificationFlags>(flags));
-    return result != 0;
-  }
-};
-
-}  // namespace detail
-
-constexpr auto const verify = detail::verify_fn{};
 
 }  // namespace btck
 
@@ -1058,3 +1038,20 @@ private:
 };
 
 }  // namespace btck
+
+/******************************************************************************/
+// MARK: Implementations
+
+template <typename Derived>
+auto btck::detail::script_pubkey_api<Derived>::verify(
+  std::int64_t amount, transaction const& tx_to,
+  std::span<transaction_output const> spent_outputs, unsigned int input_index,
+  verification_flags flags) const -> bool
+{
+  int const result = detail::invoke(
+    BtcK_ScriptPubkey_Verify, this->impl(), amount, detail::get_impl(tx_to),
+    (spent_outputs.empty() ? nullptr : detail::get_impl(spent_outputs.data())),
+    spent_outputs.size(), input_index,
+    static_cast<BtcK_VerificationFlags>(flags));
+  return result != 0;
+}

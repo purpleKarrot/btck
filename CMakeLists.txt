@@ -145,7 +145,6 @@ target_sources(btck
     src/transaction_output.cpp
     src/verification_error.c
     src/verification_flags.c
-    src/verify.cpp
   )
 
 target_compile_features(btck PRIVATE cxx_std_20)

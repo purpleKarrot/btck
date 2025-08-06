@@ -44,71 +44,6 @@ BTCK_API char const* BtcK_Error_Message(struct BtcK_Error const* error);
 
 /*****************************************************************************/
 
-#define BtcK_BlockHash_SIZE 32
-struct BtcK_BlockHash {
-  unsigned char data[BtcK_BlockHash_SIZE];
-};
-
-/*****************************************************************************/
-
-BTCK_API struct BtcK_ScriptPubkey* BtcK_ScriptPubkey_New(
-  void const* raw, size_t len, struct BtcK_Error** err);
-
-BTCK_API struct BtcK_ScriptPubkey* BtcK_ScriptPubkey_Copy(
-  struct BtcK_ScriptPubkey const* self, struct BtcK_Error** err);
-
-BTCK_API void BtcK_ScriptPubkey_Free(struct BtcK_ScriptPubkey* self);
-
-BTCK_API int BtcK_ScriptPubkey_Equal(
-  struct BtcK_ScriptPubkey const* left, struct BtcK_ScriptPubkey const* right);
-
-BTCK_API void const* BtcK_ScriptPubkey_AsBytes(
-  struct BtcK_ScriptPubkey const* self, size_t* len);
-
-/*****************************************************************************/
-
-BTCK_API struct BtcK_TransactionOutput* BtcK_TransactionOutput_New(
-  int64_t amount, struct BtcK_ScriptPubkey const* script_pubkey,
-  struct BtcK_Error** err);
-
-BTCK_API struct BtcK_TransactionOutput* BtcK_TransactionOutput_Copy(
-  struct BtcK_TransactionOutput const* self, struct BtcK_Error** err);
-
-BTCK_API void BtcK_TransactionOutput_Free(struct BtcK_TransactionOutput* self);
-
-BTCK_API int64_t
-BtcK_TransactionOutput_GetAmount(struct BtcK_TransactionOutput const* self);
-
-BTCK_API struct BtcK_ScriptPubkey* BtcK_TransactionOutput_GetScriptPubkey(
-  struct BtcK_TransactionOutput const* self, struct BtcK_Error** err);
-
-BTCK_API int BtcK_TransactionOutput_ToString(
-  struct BtcK_TransactionOutput const* self, char* buf, size_t len);
-
-/*****************************************************************************/
-
-BTCK_API struct BtcK_Transaction* BtcK_Transaction_New(
-  void const* raw, size_t len, struct BtcK_Error** err);
-
-BTCK_API struct BtcK_Transaction* BtcK_Transaction_Copy(
-  struct BtcK_Transaction const* self, struct BtcK_Error** err);
-
-BTCK_API void BtcK_Transaction_Free(struct BtcK_Transaction* self);
-
-BTCK_API size_t
-BtcK_Transaction_CountOutputs(struct BtcK_Transaction const* self);
-
-BTCK_API struct BtcK_TransactionOutput* BtcK_Transaction_GetOutput(
-  struct BtcK_Transaction const* self, size_t idx, struct BtcK_Error** err);
-
-BTCK_API void const* BtcK_Transaction_AsBytes(
-  struct BtcK_Transaction const* self, size_t* len);
-
-BTCK_API int BtcK_Transaction_ToString(
-  struct BtcK_Transaction const* self, char* buf, size_t len);
-
-/*****************************************************************************/
-
 typedef uint8_t BtcK_VerificationError;
 
 #define BtcK_VerificationError_TX_INPUT_INDEX ((BtcK_VerificationError)(1))
@@ -160,7 +95,33 @@ typedef uint32_t BtcK_VerificationFlags;
 BTCK_API int BtcK_VerificationFlags_ToString(
   BtcK_VerificationFlags flags, char* buf, size_t len);
 
-BTCK_API int BtcK_Verify(
+/*****************************************************************************/
+
+#define BtcK_BlockHash_SIZE 32
+struct BtcK_BlockHash {
+  unsigned char data[BtcK_BlockHash_SIZE];
+};
+
+BTCK_API void BtcK_BlockHash_Init(
+  struct BtcK_BlockHash* self, void const* raw, size_t len);
+
+/*****************************************************************************/
+
+BTCK_API struct BtcK_ScriptPubkey* BtcK_ScriptPubkey_New(
+  void const* raw, size_t len, struct BtcK_Error** err);
+
+BTCK_API struct BtcK_ScriptPubkey* BtcK_ScriptPubkey_Copy(
+  struct BtcK_ScriptPubkey const* self, struct BtcK_Error** err);
+
+BTCK_API void BtcK_ScriptPubkey_Free(struct BtcK_ScriptPubkey* self);
+
+BTCK_API int BtcK_ScriptPubkey_Equal(
+  struct BtcK_ScriptPubkey const* left, struct BtcK_ScriptPubkey const* right);
+
+BTCK_API void const* BtcK_ScriptPubkey_AsBytes(
+  struct BtcK_ScriptPubkey const* self, size_t* len);
+
+BTCK_API int BtcK_ScriptPubkey_Verify(
   struct BtcK_ScriptPubkey const* script_pubkey, int64_t amount,
   struct BtcK_Transaction const* tx_to,
   struct BtcK_TransactionOutput const* const* spent_outputs,
@@ -169,8 +130,45 @@ BTCK_API int BtcK_Verify(
 
 /*****************************************************************************/
 
-BTCK_API void BtcK_BlockHash_Init(
-  struct BtcK_BlockHash* self, void const* raw, size_t len);
+BTCK_API struct BtcK_TransactionOutput* BtcK_TransactionOutput_New(
+  int64_t amount, struct BtcK_ScriptPubkey const* script_pubkey,
+  struct BtcK_Error** err);
+
+BTCK_API struct BtcK_TransactionOutput* BtcK_TransactionOutput_Copy(
+  struct BtcK_TransactionOutput const* self, struct BtcK_Error** err);
+
+BTCK_API void BtcK_TransactionOutput_Free(struct BtcK_TransactionOutput* self);
+
+BTCK_API int64_t
+BtcK_TransactionOutput_GetAmount(struct BtcK_TransactionOutput const* self);
+
+BTCK_API struct BtcK_ScriptPubkey* BtcK_TransactionOutput_GetScriptPubkey(
+  struct BtcK_TransactionOutput const* self, struct BtcK_Error** err);
+
+BTCK_API int BtcK_TransactionOutput_ToString(
+  struct BtcK_TransactionOutput const* self, char* buf, size_t len);
+
+/*****************************************************************************/
+
+BTCK_API struct BtcK_Transaction* BtcK_Transaction_New(
+  void const* raw, size_t len, struct BtcK_Error** err);
+
+BTCK_API struct BtcK_Transaction* BtcK_Transaction_Copy(
+  struct BtcK_Transaction const* self, struct BtcK_Error** err);
+
+BTCK_API void BtcK_Transaction_Free(struct BtcK_Transaction* self);
+
+BTCK_API size_t
+BtcK_Transaction_CountOutputs(struct BtcK_Transaction const* self);
+
+BTCK_API struct BtcK_TransactionOutput* BtcK_Transaction_GetOutput(
+  struct BtcK_Transaction const* self, size_t idx, struct BtcK_Error** err);
+
+BTCK_API void const* BtcK_Transaction_AsBytes(
+  struct BtcK_Transaction const* self, size_t* len);
+
+BTCK_API int BtcK_Transaction_ToString(
+  struct BtcK_Transaction const* self, char* buf, size_t len);
 
 /*****************************************************************************/
 
