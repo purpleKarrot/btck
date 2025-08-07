@@ -11,6 +11,7 @@
 
 #include "_error.h"
 #include "_slice.h"
+#include "_util.h"
 #include "transaction_output.h"
 
 struct Self {
@@ -20,10 +21,17 @@ struct Self {
 
 static void dealloc(struct Self* self);
 static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
+static PyObject* bytes(struct Self const* self, PyObject* ignored);
+static PyObject* str(struct Self const* self);
 static PyObject* get_outputs(struct Self const* self, void* closure);
 
 static PyGetSetDef getset[] = {
   {"outputs", (getter)get_outputs, NULL, "", NULL},
+  {},
+};
+
+static PyMethodDef methods[] = {
+  {"__bytes__", (PyCFunction)bytes, METH_NOARGS, ""},
   {},
 };
 
@@ -36,6 +44,8 @@ PyTypeObject Transaction_Type = {
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
   .tp_getset = getset,
+  .tp_methods = methods,
+  .tp_str = (reprfunc)str,
 };
 
 static void dealloc(struct Self* self)
@@ -55,6 +65,16 @@ static PyObject* new(
   }
 
   return Transaction_New(BtcK_Transaction_New(buffer.buf, buffer.len, NULL));
+}
+
+static PyObject* bytes(struct Self const* self, PyObject* Py_UNUSED(ignored))
+{
+  return to_bytes(self->impl, (to_bytes_fn)BtcK_Transaction_ToBytes);
+}
+
+static PyObject* str(struct Self const* self)
+{
+  return to_string(self->impl, (to_string_fn)BtcK_Transaction_ToString);
 }
 
 static PyObject* outputs_item(struct Self* self, Py_ssize_t idx)

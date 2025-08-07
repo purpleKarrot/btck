@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <btck/btck.hpp>
@@ -41,15 +42,15 @@ TEST(Transaction, Transaction)
   EXPECT_EQ(tx.outputs().front().amount(), 20737411);
   EXPECT_EQ(tx.outputs().back().amount(), 42130042);
 
+  EXPECT_THAT(
+    to_bytes(tx), ::testing::ElementsAreArray(as_bytes(std::span{data})));
+
   EXPECT_EQ(
     to_string(tx),
-    "CTransaction(hash=aca326a724, ver=2, vin.size=1, vout.size=2, "
-    "nLockTime=510826)\n"
-    "    CTxIn(COutPoint(95da344585, 0), scriptSig=483045022100de1ac3bcdfb0, "
-    "nSequence=4294967294)\n"
-    "    CScriptWitness()\n"
-    "    CTxOut(nValue=0.20737411, "
-    "scriptPubKey=76a914fc25d6d5c94003bf5b0c7b64)\n"
-    "    CTxOut(nValue=0.42130042, "
-    "scriptPubKey=76a914fbed3d9b11183209a57999d5)\n");
+    R"(CTransaction(hash=aca326a724, ver=2, vin.size=1, vout.size=2, nLockTime=510826)
+    CTxIn(COutPoint(95da344585, 0), scriptSig=483045022100de1ac3bcdfb0, nSequence=4294967294)
+    CScriptWitness()
+    CTxOut(nValue=0.20737411, scriptPubKey=76a914fc25d6d5c94003bf5b0c7b64)
+    CTxOut(nValue=0.42130042, scriptPubKey=76a914fbed3d9b11183209a57999d5)
+)");
 }

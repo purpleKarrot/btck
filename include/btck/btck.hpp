@@ -477,10 +477,7 @@ enum class verification_flags : BtcK_VerificationFlags {
 inline auto to_string(verification_flags flags)
 {
   auto const cflags = static_cast<BtcK_VerificationFlags>(flags);
-  return detail::to_string(
-    &cflags, +[](BtcK_VerificationFlags const* f, char* buf, size_t len) {
-      return BtcK_VerificationFlags_ToString(*f, buf, len);
-    });
+  return detail::to_string(&cflags, BtcK_VerificationFlags_ToString);
 }
 
 }  // namespace btck

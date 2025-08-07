@@ -24,6 +24,14 @@ def test_transaction():
 
     tx = btck.Transaction(data)
 
+    assert bytes(tx) == data
+    assert str(tx) == """CTransaction(hash=aca326a724, ver=2, vin.size=1, vout.size=2, nLockTime=510826)
+    CTxIn(COutPoint(95da344585, 0), scriptSig=483045022100de1ac3bcdfb0, nSequence=4294967294)
+    CScriptWitness()
+    CTxOut(nValue=0.20737411, scriptPubKey=76a914fc25d6d5c94003bf5b0c7b64)
+    CTxOut(nValue=0.42130042, scriptPubKey=76a914fbed3d9b11183209a57999d5)
+"""
+
     assert len(tx.outputs) == 2
     assert tx.outputs[0].amount == 20737411
     assert tx.outputs[1].amount == 42130042

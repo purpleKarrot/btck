@@ -16,15 +16,6 @@
 #include "src/transaction_output.h"
 #include "src/verification_flags.h"
 
-// PyObject* ComparisonNotImplemented(void const* left, void const* right, int op)
-// {
-//   static char const* const opstrings[] = {"<", "<=", "==", "!=", ">", ">="};
-//   return PyErr_Format(
-//     PyExc_TypeError, "'%s' is not supported between instances of %R and %R", opstrings[op], Py_TYPE(left),
-//     Py_TYPE(right)
-//   );
-// }
-
 static PyTypeObject* const types[] = {
   &Slice_Type,
   &Block_Type,

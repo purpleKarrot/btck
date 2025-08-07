@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include "_error.h"
+#include "_util.h"
 #include "script_pubkey.h"
 
 struct Self {
@@ -19,6 +20,7 @@ struct Self {
 
 static void dealloc(struct Self* self);
 static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
+static PyObject* str(struct Self const* self);
 static PyObject* get_amount(struct Self const* self, void* closure);
 static PyObject* get_script_pubkey(struct Self const* self, void* closure);
 
@@ -36,6 +38,7 @@ PyTypeObject TransactionOutput_Type = {
   .tp_dealloc = (destructor)dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
+  .tp_str = (reprfunc)str,
   .tp_getset = getset,
 };
 
@@ -60,6 +63,11 @@ static PyObject* new(
 
   return TransactionOutput_New(BtcK_TransactionOutput_New(
     amount, ScriptPubkey_GetImpl(script_pubkey), NULL));
+}
+
+static PyObject* str(struct Self const* self)
+{
+  return to_string(self->impl, (to_string_fn)BtcK_TransactionOutput_ToString);
 }
 
 static PyObject* get_amount(struct Self const* self, void* Py_UNUSED(closure))

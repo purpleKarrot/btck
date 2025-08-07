@@ -9,6 +9,7 @@ python3_add_library(btck-python WITH_SOABI
   src/_bytes_writer.c
   src/_error.c
   src/_slice.c
+  src/_util.c
   src/block.c
   src/block_hash.c
   src/chain.c

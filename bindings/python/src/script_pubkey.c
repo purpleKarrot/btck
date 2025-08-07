@@ -10,8 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "_bytes_writer.h"
 #include "_error.h"
+#include "_util.h"
 #include "transaction.h"
 #include "transaction_output.h"
 #include "verification_flags.h"
@@ -73,23 +73,21 @@ static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs)
 
 static PyObject* richcmp(struct Self const* self, PyObject* other, int op)
 {
-  // if ((op != Py_EQ && op != Py_NE) || !PyObject_TypeCheck(other, ChainType_Type)) {
-  //   return ComparisonNotImplemented(self, other, op);
-  // }
+  if (
+    (op != Py_EQ && op != Py_NE) ||
+    !PyObject_TypeCheck(other, &ScriptPubkey_Type)) {
+    return cmp_not_implemented(self, other, op);
+  }
 
-  // return PyBool_FromLong((op == Py_EQ) == (self->value == ((struct Self*)other)->value));
-  return Py_False;
+  int const result =
+    BtcK_ScriptPubkey_Equal(self->impl, ScriptPubkey_GetImpl(other));
+
+  return PyBool_FromLong((op == Py_EQ) == (result != 0));
 }
 
 static PyObject* bytes(struct Self const* self, PyObject* Py_UNUSED(ignored))
 {
-  PyBytesWriter* writer = PyBytesWriter_Create(0);
-  if (BtcK_ScriptPubkey_ToBytes(self->impl, write_bytes, writer) != 0) {
-    PyBytesWriter_Discard(writer);
-    return NULL;
-  }
-
-  return PyBytesWriter_Finish(writer);
+  return to_bytes(self->impl, (to_bytes_fn)BtcK_ScriptPubkey_ToBytes);
 }
 
 struct TxOutputArray {

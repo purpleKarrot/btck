@@ -95,7 +95,7 @@ typedef uint32_t BtcK_VerificationFlags;
                             BtcK_VerificationFlags_TAPROOT))
 
 BTCK_API int BtcK_VerificationFlags_ToString(
-  BtcK_VerificationFlags flags, char* buf, size_t len);
+  BtcK_VerificationFlags const* flags, char* buf, size_t len);
 
 /*****************************************************************************/
 

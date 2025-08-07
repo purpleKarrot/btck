@@ -10,6 +10,7 @@
 
 #include "_error.h"
 #include "_slice.h"
+#include "_util.h"
 #include "block_hash.h"
 #include "transaction.h"
 
@@ -20,12 +21,19 @@ struct Self {
 
 static void dealloc(struct Self* self);
 static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
+static PyObject* bytes(struct Self const* self, PyObject* ignored);
+static PyObject* str(struct Self const* self);
 static PyObject* get_hash(struct Self const* self, void* closure);
 static PyObject* get_transactions(struct Self const* self, void* closure);
 
 static PyGetSetDef getset[] = {
   {"hash", (getter)get_hash, NULL, "", NULL},
   {"transactions", (getter)get_transactions, NULL, "", NULL},
+  {},
+};
+
+static PyMethodDef methods[] = {
+  {"__bytes__", (PyCFunction)bytes, METH_NOARGS, ""},
   {},
 };
 
@@ -38,6 +46,8 @@ PyTypeObject Block_Type = {
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_new = new,
   .tp_getset = getset,
+  .tp_methods = methods,
+  .tp_str = (reprfunc)str,
 };
 
 static void dealloc(struct Self* self)
@@ -57,6 +67,16 @@ static PyObject* new(
   }
 
   return Block_New(BtcK_Block_New(raw.buf, raw.len, NULL));
+}
+
+static PyObject* bytes(struct Self const* self, PyObject* Py_UNUSED(ignored))
+{
+  return to_bytes(self->impl, (to_bytes_fn)BtcK_Block_ToBytes);
+}
+
+static PyObject* str(struct Self const* self)
+{
+  return to_string(self->impl, (to_string_fn)BtcK_Block_ToString);
 }
 
 static PyObject* get_hash(struct Self const* self, void* Py_UNUSED(closure))

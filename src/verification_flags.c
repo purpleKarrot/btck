@@ -4,6 +4,7 @@
 
 #include <btck/btck.h>
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -45,17 +46,19 @@ static struct Entry const flag_table[] = {
 };
 
 int BtcK_VerificationFlags_ToString(
-  BtcK_VerificationFlags flags, char* buf, size_t len)
+  BtcK_VerificationFlags const* flags, char* buf, size_t len)
 {
-  if (flags == BtcK_VerificationFlags_ALL) {
+  assert(flags != NULL);
+
+  if (*flags == BtcK_VerificationFlags_ALL) {
     return snprintf(buf, len, "ALL");
   }
 
-  if (flags == BtcK_VerificationFlags_NONE) {
+  if (*flags == BtcK_VerificationFlags_NONE) {
     return snprintf(buf, len, "NONE");
   }
 
-  if ((flags & ~BtcK_VerificationFlags_ALL) != 0) {
+  if ((*flags & ~BtcK_VerificationFlags_ALL) != 0) {
     return -1;
   }
 
@@ -64,7 +67,7 @@ int BtcK_VerificationFlags_ToString(
 
   size_t const nflags = sizeof(flag_table) / sizeof(flag_table[0]);
   for (size_t i = 0; i < nflags; ++i) {
-    if (flags & flag_table[i].flag) {
+    if (*flags & flag_table[i].flag) {
       int retval = print(&ctx, "%s%s", first ? "" : " | ", flag_table[i].name);
       if (retval < 0) {
         return retval;

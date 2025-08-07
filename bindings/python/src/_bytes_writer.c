@@ -171,9 +171,3 @@ int PyBytesWriter_WriteBytes(
   memcpy(buf + pos, bytes, size);
   return 0;
 }
-
-int write_bytes(void const* bytes, size_t size, void* writer)
-{
-  return PyBytesWriter_WriteBytes(
-    (PyBytesWriter*)writer, bytes, (Py_ssize_t)size);
-}

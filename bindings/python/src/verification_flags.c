@@ -9,12 +9,15 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "_util.h"
+
 struct Self {
   PyObject_HEAD
   BtcK_VerificationFlags impl;
 };
 
 static PyObject* new(PyTypeObject* type, PyObject* args, PyObject* kwargs);
+static PyObject* str(struct Self const* self);
 static PyObject* richcmp(struct Self const* self, PyObject* other, int op);
 static PyObject* nb_or(struct Self const* left, struct Self const* right);
 static PyObject* nb_and(struct Self const* left, struct Self const* right);
@@ -34,6 +37,7 @@ PyTypeObject VerificationFlags_Type = {
   .tp_doc = "VerificationFlags object",
   .tp_basicsize = sizeof(struct Self),
   .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_str = (reprfunc)str,
   .tp_richcompare = (richcmpfunc)richcmp,
   .tp_as_number = &as_number,
 };
@@ -66,6 +70,23 @@ static struct Enum enums[] = {
   {},
 };
 
+static PyObject* str(struct Self const* self)
+{
+  return to_string(&self->impl, (to_string_fn)BtcK_VerificationFlags_ToString);
+}
+
+static PyObject* richcmp(struct Self const* self, PyObject* other, int op)
+{
+  if (
+    (op != Py_EQ && op != Py_NE) ||
+    !PyObject_TypeCheck(other, &VerificationFlags_Type)) {
+    return cmp_not_implemented(self, other, op);
+  }
+
+  return PyBool_FromLong(
+    (op == Py_EQ) == (self->impl == ((struct Self*)other)->impl));
+}
+
 static PyObject* nb_or(struct Self const* left, struct Self const* right)
 {
   return VerificationFlags_New(left->impl | right->impl);
@@ -84,27 +105,6 @@ static PyObject* nb_xor(struct Self const* left, struct Self const* right)
 static PyObject* nb_invert(struct Self const* self)
 {
   return VerificationFlags_New(~self->impl);
-}
-
-static PyObject* ComparisonNotImplemented(
-  void const* left, void const* right, int op)
-{
-  static char const* const opstrings[] = {"<", "<=", "==", "!=", ">", ">="};
-  return PyErr_Format(
-    PyExc_TypeError, "'%s' is not supported between instances of %R and %R",
-    opstrings[op], Py_TYPE(left), Py_TYPE(right));
-}
-
-static PyObject* richcmp(struct Self const* self, PyObject* other, int op)
-{
-  if (
-    (op != Py_EQ && op != Py_NE) ||
-    !PyObject_TypeCheck(other, &VerificationFlags_Type)) {
-    return ComparisonNotImplemented(self, other, op);
-  }
-
-  return PyBool_FromLong(
-    (op == Py_EQ) == (self->impl == ((struct Self*)other)->impl));
 }
 
 void VerificationFlags_Init(void)
