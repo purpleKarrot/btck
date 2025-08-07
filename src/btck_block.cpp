@@ -2,9 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "block.hpp"
-
-#include <btck/btck.h>
+#include <btck/btck.h>  // IWYU pragma: associated
 #include <primitives/transaction.h>
 
 #include <streams.h>
@@ -14,76 +12,71 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
-#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "node/blockstorage.h"
 #include "primitives/block.h"
 #include "serialize.h"
 #include "span.h"
-#include "transaction.hpp"
 #include "uint256.h"
+#include "util/api.hpp"
 #include "util/error.hpp"
-
-BtcK_Block::BtcK_Block(std::span<std::byte const> raw)
-{
-  auto stream = DataStream{raw};
-  stream >> TX_WITH_WITNESS(block);
-}
-
-BtcK_Block::BtcK_Block(CBlockIndex const& bi, node::BlockManager const& bm)
-{
-  if (!bm.ReadBlock(this->block, bi)) {
-    throw std::runtime_error("Failed to read block.");
-  }
-}
+#include "util/writer_stream.hpp"
 
 extern "C" {
 
 auto BtcK_Block_New(void const* raw, std::size_t len, struct BtcK_Error** err)
   -> BtcK_Block*
 {
-  return util::WrapFn(err, [=] {
-    return new BtcK_Block{
-      std::span{reinterpret_cast<std::byte const*>(raw), len}};
+  return util::WrapFn(err, [raw, len] {
+    auto const data = std::span{reinterpret_cast<std::byte const*>(raw), len};
+    auto block = CBlock{};
+    auto stream = DataStream{data};
+    stream >> TX_WITH_WITNESS(block);
+    return api::create<CBlock>(std::move(block));
   });
 }
 
 auto BtcK_Block_Copy(BtcK_Block const* self, struct BtcK_Error** err)
   -> BtcK_Block*
 {
-  return util::WrapFn(err, [=] { return self->Retain(); });
+  return api::copy(self, err);
 }
 
 void BtcK_Block_Free(BtcK_Block* self)
 {
-  self->Release();
+  api::free(self);
 }
 
 void BtcK_Block_GetHash(BtcK_Block const* self, BtcK_BlockHash* out)
 {
-  auto const hash = self->block.GetHash();
+  auto const hash = api::get(self).GetHash();
   BtcK_BlockHash_Init(out, hash.data(), decltype(hash)::size());
 }
 
 auto BtcK_Block_CountTransactions(BtcK_Block const* self) -> std::size_t
 {
-  return self->block.vtx.size();
+  return api::get(self).vtx.size();
 }
 
-auto BtcK_Block_GetTransaction(
-  BtcK_Block const* self, std::size_t idx, struct BtcK_Error** err)
-  -> BtcK_Transaction*
+auto BtcK_Block_GetTransaction(BtcK_Block const* self, std::size_t idx)
+  -> BtcK_Transaction const*
 {
-  return util::WrapFn(
-    err, [=] { return BtcK_Transaction::New(self->block.vtx[idx]); });
+  return api::ref(api::get(self).vtx[idx]);
 }
 
-auto BtcK_Block_AsBytes(BtcK_Block const* /*self*/, std::size_t* /*len*/)
-  -> void const*
+auto BtcK_Block_ToBytes(
+  BtcK_Block const* self, BtcK_WriteBytes write, void* userdata) -> int
 {
-  return nullptr;
+  try {
+    auto stream = util::WriterStream{write, userdata};
+    stream << TX_WITH_WITNESS(api::get(self));
+    return 0;
+  }
+  catch (...) {
+    return -1;
+  }
 }
 
 void BtcK_BlockHash_Init(
@@ -97,7 +90,7 @@ void BtcK_BlockHash_Init(
 
 auto BtcK_Block_ToString(BtcK_Block const* self, char* buf, size_t len) -> int
 {
-  auto const str = self->block.ToString();
+  auto const str = api::get(self).ToString();
   str.copy(buf, len);
   return static_cast<int>(str.size());
 }

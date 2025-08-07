@@ -60,8 +60,8 @@ static PyObject* new(
 static PyObject* outputs_item(struct Self* self, Py_ssize_t idx)
 {
   struct BtcK_Error* err = NULL;
-  struct BtcK_TransactionOutput* ptr =
-    BtcK_Transaction_GetOutput(self->impl, idx, &err);
+  struct BtcK_TransactionOutput* ptr = BtcK_TransactionOutput_Copy(
+    BtcK_Transaction_GetOutput(self->impl, idx), &err);
   if (err != NULL) {
     return SetError(err);
   }

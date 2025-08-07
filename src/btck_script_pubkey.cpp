@@ -2,9 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "script_pubkey.hpp"
-
-#include <btck/btck.h>
+#include <btck/btck.h>  // IWYU pragma: associated
 #include <script/interpreter.h>
 
 #include <btck/btck.hpp>
@@ -18,9 +16,7 @@
 
 #include "primitives/transaction.h"
 #include "script/script.h"
-#include "transaction.hpp"
-#include "transaction_output.hpp"  // IWYU pragma: keep
-#include "util/as_bytes.hpp"
+#include "util/api.hpp"
 #include "util/error.hpp"
 
 namespace {
@@ -78,33 +74,35 @@ auto BtcK_ScriptPubkey_New(
   void const* raw, std::size_t len, struct BtcK_Error** err)
   -> BtcK_ScriptPubkey*
 {
-  return util::WrapFn(err, [=] {
-    return new BtcK_ScriptPubkey{
-      std::span{reinterpret_cast<std::uint8_t const*>(raw), len}};
+  return util::WrapFn(err, [raw, len] {
+    auto data = std::span{reinterpret_cast<std::uint8_t const*>(raw), len};
+    return api::create<CScript>(data.begin(), data.end());
   });
 }
 
 auto BtcK_ScriptPubkey_Copy(
   BtcK_ScriptPubkey const* self, struct BtcK_Error** err) -> BtcK_ScriptPubkey*
 {
-  return util::WrapFn(err, [=] { return self->Retain(); });
+  return api::copy(self, err);
 }
 
 void BtcK_ScriptPubkey_Free(BtcK_ScriptPubkey* self)
 {
-  self->Release();
+  api::free(self);
 }
 
 auto BtcK_ScriptPubkey_Equal(
   BtcK_ScriptPubkey const* left, BtcK_ScriptPubkey const* right) -> int
 {
-  return (left->script == right->script) ? 1 : 0;
+  return (api::get(left) == api::get(right)) ? 1 : 0;
 }
 
-auto BtcK_ScriptPubkey_AsBytes(BtcK_ScriptPubkey const* self, std::size_t* len)
-  -> void const*
+auto BtcK_ScriptPubkey_ToBytes(
+  const struct BtcK_ScriptPubkey* self, BtcK_WriteBytes write, void* userdata)
+  -> int
 {
-  return util::AsBytes(self->script, len);
+  auto const bytes = as_bytes(std::span{api::get(self)});
+  return write(bytes.data(), bytes.size(), userdata);
 }
 
 auto BtcK_ScriptPubkey_Verify(
@@ -117,9 +115,9 @@ auto BtcK_ScriptPubkey_Verify(
   return util::WrapFn(err, [=] {
     auto const spent_outputs_view =
       std::span{spent_outputs, spent_outputs_len} |
-      std::views::transform([](auto const* out) { return out->tx_out; });
+      std::views::transform([](auto const* out) { return api::get(out); });
     auto const result = verify(
-      script_pubkey->script, amount, *tx->transaction,
+      api::get(script_pubkey), amount, *api::get(tx),
       std::vector(spent_outputs_view.begin(), spent_outputs_view.end()),
       input_index, flags);
     return result ? 1 : 0;

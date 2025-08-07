@@ -70,7 +70,7 @@ static PyObject* transactions_item(struct Self* self, Py_ssize_t idx)
 {
   struct BtcK_Error* err = NULL;
   struct BtcK_Transaction* ptr =
-    BtcK_Block_GetTransaction(self->impl, idx, &err);
+    BtcK_Transaction_Copy(BtcK_Block_GetTransaction(self->impl, idx), &err);
   if (err != NULL) {
     return SetError(err);
   }

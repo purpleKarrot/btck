@@ -45,15 +45,13 @@ static void test_transaction(void** state)
 
   assert_int_equal(BtcK_Transaction_CountOutputs(transaction), 2);
 
-  struct BtcK_TransactionOutput* txout1 =
-    BtcK_Transaction_GetOutput(transaction, 0, NULL);
+  struct BtcK_TransactionOutput const* txout1 =
+    BtcK_Transaction_GetOutput(transaction, 0);
   assert_int_equal(BtcK_TransactionOutput_GetAmount(txout1), 20737411);
-  BtcK_TransactionOutput_Free(txout1);
 
-  struct BtcK_TransactionOutput* txout2 =
-    BtcK_Transaction_GetOutput(transaction, 1, NULL);
+  struct BtcK_TransactionOutput const* txout2 =
+    BtcK_Transaction_GetOutput(transaction, 1);
   assert_int_equal(BtcK_TransactionOutput_GetAmount(txout2), 42130042);
-  BtcK_TransactionOutput_Free(txout1);
 
   BtcK_Transaction_Free(transaction);
 }

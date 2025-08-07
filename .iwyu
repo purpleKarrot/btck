@@ -5,6 +5,9 @@
 
   { "include": ["<abstract.h>", "private", "<Python.h>", "public"] },
   { "include": ["<boolobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["\"bytearrayobject.h\"", "private", "<Python.h>", "public"] },
+  { "include": ["<bytearrayobject.h>", "private", "<Python.h>", "public"] },
+  { "include": ["\"bytesobject.h\"", "private", "<Python.h>", "public"] },
   { "include": ["<bytesobject.h>", "private", "<Python.h>", "public"] },
   { "include": ["<descrobject.h>", "private", "<Python.h>", "public"] },
   { "include": ["<dictobject.h>", "private", "<Python.h>", "public"] },

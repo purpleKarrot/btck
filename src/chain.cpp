@@ -4,16 +4,19 @@
 
 #include "chain.hpp"
 
-#include <btck/btck.h>
+#include <btck/btck.h>  // IWYU pragma: associated
 
 #include <cstddef>
 #include <span>
+#include <stdexcept>
+#include <utility>
 
-#include "block.hpp"
 #include "chain.h"
 #include "node/blockstorage.h"
+#include "primitives/block.h"
 #include "span.h"
 #include "uint256.h"
+#include "util/api.hpp"
 #include "util/error.hpp"
 
 //   // poor man's cpp support for named arguments
@@ -51,9 +54,16 @@ auto BtcK_Chain_GetBlock(
   BtcK_Chain const* self, std::size_t idx, struct BtcK_Error** err)
   -> BtcK_Block*
 {
-  return util::WrapFn(err, [=] {
+  return util::WrapFn(err, [self, idx] {
     CBlockIndex* bi = self->chainstate_manager.ActiveChain()[int(idx)];
-    return BtcK_Block::New(*bi, self->chainstate_manager.m_blockman);
+    node::BlockManager const& bm = self->chainstate_manager.m_blockman;
+
+    auto block = CBlock{};
+    if (!bm.ReadBlock(block, *bi)) {
+      throw std::runtime_error("Failed to read block.");
+    }
+
+    return api::create<CBlock>(std::move(block));
   });
 }
 

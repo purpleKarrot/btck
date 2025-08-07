@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "_error.h"
 #include "script_pubkey.h"
 
 struct Self {
@@ -69,8 +70,14 @@ static PyObject* get_amount(struct Self const* self, void* Py_UNUSED(closure))
 static PyObject* get_script_pubkey(
   struct Self const* self, void* Py_UNUSED(closure))
 {
-  return ScriptPubkey_New(
-    BtcK_TransactionOutput_GetScriptPubkey(self->impl, NULL));
+  struct BtcK_Error* err = NULL;
+  struct BtcK_ScriptPubkey* ptr = BtcK_ScriptPubkey_Copy(
+    BtcK_TransactionOutput_GetScriptPubkey(self->impl), &err);
+  if (err != NULL) {
+    return SetError(err);
+  }
+
+  return ScriptPubkey_New(ptr);
 }
 
 PyObject* TransactionOutput_New(struct BtcK_TransactionOutput* txout)

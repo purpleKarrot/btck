@@ -230,11 +230,15 @@ namespace btck::detail {
 template <typename T> struct c_api_traits;
 
 template <typename T> struct owned_policy {
+  using pointer = T*;
+  using const_pointer = T const*;
   static auto copy(T const* p) { return c_api_traits<T>::copy(p); }
   static void free(T* p) { c_api_traits<T>::free(p); }
 };
 
 template <typename T> struct unowned_policy {
+  using pointer = T const*;
+  using const_pointer = T const*;
   static auto copy(T const* p) { return p; }
   static void free(T const* /*p*/) {}
 };
@@ -245,13 +249,12 @@ constexpr auto const internal = internal_t{};
 template <template <typename> typename Api, template <typename> typename Owned>
 class wrapper : public Api<wrapper<Api, Owned>>
 {
-  using c_type = typename Api<wrapper>::c_type;
-  using ownership_traits = Owned<c_type>;
+  using ownership_traits = Owned<typename Api<wrapper>::c_type>;
 
 public:
   using base = wrapper;
 
-  wrapper(internal_t /*internal*/, c_type* ptr)
+  wrapper(internal_t /*internal*/, ownership_traits::pointer ptr)
     : ptr_(ptr)
   {}
 
@@ -285,12 +288,16 @@ public:
     return *this;
   }
 
-  [[nodiscard]] auto get() -> c_type* { return ptr_; }
-  [[nodiscard]] auto get() const -> c_type const* { return ptr_; }
+  [[nodiscard]] auto get() -> ownership_traits::pointer { return ptr_; }
+
+  [[nodiscard]] auto get() const -> ownership_traits::const_pointer
+  {
+    return ptr_;
+  }
 
 private:
   friend struct get_impl_;
-  c_type* ptr_;
+  ownership_traits::pointer ptr_;
 };
 
 template <template <typename> typename Api>
@@ -320,6 +327,13 @@ struct get_impl_ {
 constexpr auto const get_impl = get_impl_{};
 
 }  // namespace btck::detail
+
+namespace btck {
+
+template <typename T>
+using unowned = decltype(detail::make_unowned(std::declval<T>()));
+
+}  // namespace btck
 
 /******************************************************************************/
 // MARK: to_string
@@ -572,12 +586,6 @@ public:
     verification_flags flags) const -> bool;
 
 private:
-  friend auto operator==(
-    script_pubkey_api const& left, script_pubkey_api const& right) -> bool
-  {
-    return BtcK_ScriptPubkey_Equal(left.impl(), right.impl()) != 0;
-  }
-
   friend auto as_bytes(script_pubkey_api const& self)
     -> std::span<std::byte const>
   {
@@ -594,6 +602,14 @@ private:
   friend Derived;
   script_pubkey_api() = default;
 };
+
+template <template <class> class LeftOwned, template <class> class RightOwned>
+auto operator==(
+  wrapper<script_pubkey_api, LeftOwned> const& left,
+  wrapper<script_pubkey_api, RightOwned> const& right) -> bool
+{
+  return BtcK_ScriptPubkey_Equal(get_impl(left), get_impl(right)) != 0;
+}
 
 }  // namespace detail
 
@@ -640,11 +656,10 @@ public:
     return BtcK_TransactionOutput_GetAmount(this->impl());
   }
 
-  [[nodiscard]] auto script_pubkey() const -> btck::script_pubkey
+  [[nodiscard]] auto script_pubkey() const -> unowned<btck::script_pubkey>
   {
     return {
-      detail::internal,
-      detail::invoke(BtcK_TransactionOutput_GetScriptPubkey, this->impl())};
+      detail::internal, BtcK_TransactionOutput_GetScriptPubkey(this->impl())};
   }
 
 private:
@@ -701,7 +716,7 @@ class transaction_outputs_api
 {
 public:
   using c_type = BtcK_Transaction const;
-  using value_type = transaction_output;
+  using value_type = unowned<transaction_output>;
 
   [[nodiscard]] auto size() const -> std::size_t
   {
@@ -712,7 +727,7 @@ public:
   {
     return {
       detail::internal,
-      detail::invoke(BtcK_Transaction_GetOutput, this->impl(), idx),
+      BtcK_Transaction_GetOutput(this->impl(), idx),
     };
   }
 
@@ -832,7 +847,7 @@ class block_transactions_api
 {
 public:
   using c_type = BtcK_Block const;
-  using value_type = transaction;
+  using value_type = unowned<transaction>;
 
   [[nodiscard]] auto size() const -> std::size_t
   {
@@ -843,7 +858,7 @@ public:
   {
     return {
       detail::internal,
-      detail::invoke(BtcK_Block_GetTransaction, this->impl(), idx),
+      BtcK_Block_GetTransaction(this->impl(), idx),
     };
   }
 
@@ -932,9 +947,6 @@ enum class ValidationResult : std::uint8_t {
                 //!< bad)
   HEADER_LOW_WORK,  //!< the block header may be on a too-little-work chain
 };
-
-template <typename T>
-using unowned = decltype(detail::make_unowned(std::declval<T>()));
 
 using Validation =
   std::function<void(unowned<block> const&, ValidationState, ValidationResult)>;
