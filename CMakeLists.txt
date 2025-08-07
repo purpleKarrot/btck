@@ -139,6 +139,7 @@ target_sources(btck
     src/util/error.c
     src/util/error.cpp
     src/btck_block.cpp
+    src/btck_error.cpp
     src/chain.cpp
     src/btck_script_pubkey.cpp
     src/btck_transaction.cpp
@@ -167,16 +168,19 @@ target_link_libraries(btck PRIVATE
   bitcoinkernel
   )
 
-add_library(btck-cpp INTERFACE)
+add_library(btck-cpp STATIC)
 add_library(BtcK::btck-cpp ALIAS btck-cpp)
 
 target_sources(btck-cpp
   PUBLIC FILE_SET HEADERS BASE_DIRS include FILES
     include/btck/btck.hpp
+  PRIVATE
+    src/btck.cpp
+    src/btck_error.cpp
   )
 
-target_compile_features(btck-cpp INTERFACE cxx_std_20)
-target_link_libraries(btck-cpp INTERFACE BtcK::btck)
+target_compile_features(btck-cpp PUBLIC cxx_std_20)
+target_link_libraries(btck-cpp PUBLIC BtcK::btck)
 
 install(TARGETS btck btck-cpp EXPORT btck-targets
   FILE_SET HEADERS

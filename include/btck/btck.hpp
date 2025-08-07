@@ -2,21 +2,30 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <btck/btck.h>
+#pragma once
+
+#include <btck/btck.h>  // IWYU pragma: export
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <functional>
 #include <iterator>
 #include <memory>
-#include <new>
 #include <span>
-#include <stdexcept>
+#include <string>
 #include <string_view>
-#include <system_error>
+#include <type_traits>
 #include <utility>
+#include <vector>
+
+struct BtcK_Block;
+struct BtcK_Chain;
+struct BtcK_Error;
+struct BtcK_ScriptPubkey;
+struct BtcK_Transaction;
+struct BtcK_TransactionOutput;
 
 /******************************************************************************/
 // MARK: Range Mixin
@@ -340,15 +349,25 @@ using unowned = decltype(detail::make_unowned(std::declval<T>()));
 
 namespace btck::detail {
 
-template <typename T> auto to_string(T obj, int (*printfn)(T, char*, size_t))
+using to_bytes_fn = int (*)(void const*, BtcK_WriteBytes, void*);
+auto to_bytes_(void const* obj, to_bytes_fn writefn) -> std::vector<std::byte>;
+
+using to_string_fn = int (*)(void const*, char*, size_t);
+auto to_string_(void const* obj, to_string_fn printfn) -> std::string;
+
+template <typename T>
+auto to_bytes(T const* obj, int (*writefn)(T const*, BtcK_WriteBytes, void*))
 {
-  auto const len = printfn(obj, nullptr, 0);
-  if (len < 0) {
-    throw std::runtime_error("to_string failed");
-  }
-  auto buf = std::string(static_cast<std::string::size_type>(len), '\0');
-  printfn(obj, buf.data(), len + 1);
-  return buf;
+  return to_bytes_(
+    reinterpret_cast<void const*>(obj), reinterpret_cast<to_bytes_fn>(writefn));
+}
+
+template <typename T>
+auto to_string(T const* obj, int (*printfn)(T const*, char*, size_t))
+{
+  return to_string_(
+    reinterpret_cast<void const*>(obj),
+    reinterpret_cast<to_string_fn>(printfn));
 }
 
 }  // namespace btck::detail
@@ -439,45 +458,6 @@ constexpr auto operator^=(E& left, E right) -> decltype(auto)
 }  // namespace btck
 
 /******************************************************************************/
-// MARK: VerificationError
-
-namespace btck {
-
-enum class verification_error : BtcK_VerificationError {
-  tx_input_index = BtcK_VerificationError_TX_INPUT_INDEX,
-  invalid_flags = BtcK_VerificationError_INVALID_FLAGS,
-  invalid_flags_combination = BtcK_VerificationError_INVALID_FLAGS_COMBINATION,
-  spent_outputs_required = BtcK_VerificationError_SPENT_OUTPUTS_REQUIRED,
-  spent_outputs_mismatch = BtcK_VerificationError_SPENT_OUTPUTS_MISMATCH,
-};
-
-namespace detail {
-
-inline struct : std::error_category {
-  [[nodiscard]] auto name() const noexcept -> char const* override
-  {
-    return "VerificationError";
-  }
-
-  [[nodiscard]] auto message(int ev) const -> std::string override
-  {
-    return BtcK_VerificationError_Message(ev);
-  }
-} const verification_error_category;
-
-}  // namespace detail
-
-inline auto make_error_code(verification_error err) -> std::error_code
-{
-  return {static_cast<int>(err), detail::verification_error_category};
-}
-
-}  // namespace btck
-
-template <>
-struct std::is_error_code_enum<btck::verification_error> : std::true_type {};
-
-/******************************************************************************/
 // MARK: VerificationFlags
 
 namespace btck {
@@ -497,7 +477,10 @@ enum class verification_flags : BtcK_VerificationFlags {
 inline auto to_string(verification_flags flags)
 {
   auto const cflags = static_cast<BtcK_VerificationFlags>(flags);
-  return detail::to_string(cflags, BtcK_VerificationFlags_ToString);
+  return detail::to_string(
+    &cflags, +[](BtcK_VerificationFlags const* f, char* buf, size_t len) {
+      return BtcK_VerificationFlags_ToString(*f, buf, len);
+    });
 }
 
 }  // namespace btck
@@ -524,24 +507,7 @@ struct error : std::unique_ptr<BtcK_Error, error_deleter> {
   [[nodiscard]] auto message() const { return BtcK_Error_Message(get()); }
 };
 
-inline void throw_domain(error const& err, std::error_category const& domain)
-{
-  if (std::strcmp(err.domain(), domain.name()) == 0) {
-    throw std::system_error(err.code(), domain);
-  }
-}
-
-[[noreturn]] inline void translate_error(error const& err)
-{
-  using namespace std::literals;
-  if (err.domain() == "Memory"sv) {
-    throw std::bad_alloc();
-  }
-  throw_domain(err, std::generic_category());  // TODO: Is this portable?
-  throw_domain(err, std::system_category());   // TODO: Is this portable?
-  throw_domain(err, detail::verification_error_category);
-  throw std::runtime_error{err.message()};
-}
+[[noreturn]] void translate_error(error const& err);
 
 template <typename Function, typename... Args>
 auto invoke(Function function, Args... args)
@@ -586,12 +552,9 @@ public:
     verification_flags flags) const -> bool;
 
 private:
-  friend auto as_bytes(script_pubkey_api const& self)
-    -> std::span<std::byte const>
+  friend auto to_bytes(script_pubkey_api const& self) -> std::vector<std::byte>
   {
-    auto len = std::size_t{};
-    auto const* data = BtcK_ScriptPubkey_AsBytes(self.impl(), &len);
-    return detail::as_bytes(data, len);
+    return detail::to_bytes(self.impl(), BtcK_ScriptPubkey_ToBytes);
   }
 
   [[nodiscard]] auto impl() const
@@ -753,12 +716,9 @@ public:
   }
 
 private:
-  friend auto as_bytes(transaction_api const& self)
-    -> std::span<std::byte const>
+  friend auto to_bytes(transaction_api const& self) -> std::vector<std::byte>
   {
-    auto len = std::size_t{};
-    auto const* data = BtcK_Transaction_AsBytes(self.impl(), &len);
-    return detail::as_bytes(data, len);
+    return detail::to_bytes(self.impl(), BtcK_Transaction_ToBytes);
   }
 
   friend auto to_string(transaction_api const& self)
@@ -891,11 +851,9 @@ public:
   }
 
 private:
-  friend auto as_bytes(block_api const& self) -> std::span<std::byte const>
+  friend auto to_bytes(block_api const& self) -> std::vector<std::byte>
   {
-    auto len = std::size_t{};
-    auto const* data = BtcK_Block_AsBytes(self.impl(), &len);
-    return detail::as_bytes(data, len);
+    return detail::to_bytes(self.impl(), BtcK_Block_ToBytes);
   }
 
   friend auto to_string(block_api const& self)

@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <btck/btck.hpp>
@@ -74,6 +75,10 @@ TEST(Block, Genesis)
       EXPECT_EQ(txout.amount(), 50'00000000);
     }
   }
+
+  EXPECT_THAT(
+    to_bytes(block),
+    ::testing::ElementsAreArray(as_bytes(std::span{block_data})));
 
   EXPECT_EQ(
     to_string(block),

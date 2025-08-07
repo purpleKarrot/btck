@@ -5,7 +5,7 @@
 #include <btck/btck.h>  // IWYU pragma: associated
 #include <script/interpreter.h>
 
-#include <btck/btck.hpp>
+#include <btck/btck_error.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <ranges>
