@@ -24,7 +24,7 @@ jobs:
               ccache
               libboost-dev
               libcmocka-dev
-              libgtest-dev
+              libgmock-dev
               liblua5.4-dev
             python-packages: >
               furo
@@ -44,7 +44,7 @@ jobs:
               iwyu
               libboost-dev
               libcmocka-dev
-              libgtest-dev
+              libgmock-dev
               liblua5.4-dev
             python-packages:
               mypy
@@ -74,7 +74,7 @@ jobs:
               ccache
               libboost-dev
               libcmocka-dev
-              libgtest-dev
+              libgmock-dev
               liblua5.4-dev
             python-packages: >
               mypy
