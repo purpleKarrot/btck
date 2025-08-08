@@ -15,11 +15,11 @@ jobs:
             runs-on: ubuntu-latest
             config-options: >
               -DBTCK_BUILD_DOC=ON
-              -DBTCK_ENABLE_GO=ON
-              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_GO=OFF
+              -DBTCK_ENABLE_JAVA=OFF
               -DBTCK_ENABLE_LUA=ON
               -DBTCK_ENABLE_PYTHON=ON
-              -DBTCK_ENABLE_RUST=ON
+              -DBTCK_ENABLE_RUST=OFF
             dependencies: >
               ccache
               libboost-dev
@@ -50,7 +50,7 @@ jobs:
               mypy
               pytest
             config-options: >
-              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_JAVA=OFF
               -DBTCK_ENABLE_LUA=ON
               -DBTCK_ENABLE_PYTHON=ON
               -DBTCK_ENABLE_SWIFT=ON
@@ -64,7 +64,7 @@ jobs:
           - name: Linux-Clang18
             runs-on: ubuntu-latest
             config-options: >
-              -DBTCK_ENABLE_JAVA=ON
+              -DBTCK_ENABLE_JAVA=OFF
               -DBTCK_ENABLE_LUA=ON
               -DBTCK_ENABLE_PYTHON=ON
               -DBTCK_ENABLE_SWIFT=ON

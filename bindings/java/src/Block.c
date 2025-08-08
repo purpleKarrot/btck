@@ -65,7 +65,7 @@ jobject Java_Block_get(JNIEnv* env, jobject self, jint idx)
   }
 
   struct BtcK_Transaction* tx =
-    BtcK_Block_GetTransaction(ptr, (size_t)idx, NULL);
+    BtcK_Transaction_Copy(BtcK_Block_GetTransaction(ptr, (size_t)idx), NULL);
   if (tx == NULL) {
     return NULL;
   }

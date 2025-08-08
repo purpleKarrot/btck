@@ -5,8 +5,12 @@
 enable_language(Swift)
 
 add_library(btck-swift SHARED
-  btck.swift
-  btck+.swift
+  # btck.swift
+  # btck+.swift
+  error.swift
+  script_pubkey.swift
+  transaction.swift
+  transaction_output.swift
   )
 
 target_compile_options(btck-swift PRIVATE

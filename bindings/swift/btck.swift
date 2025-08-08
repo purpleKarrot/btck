@@ -5,132 +5,6 @@
 import Foundation
 @_implementationOnly import btck_c
 
-// MARK: - Error
-
-public class BtcKError: Error {
-    var ptr: OpaquePointer
-
-    internal init(_ err: OpaquePointer) {
-        self.ptr = err
-    }
-
-    public var code: Int {
-        Int(BtcK_Error_Code(self.ptr))
-    }
-
-    public var domain: String {
-        String(cString: BtcK_Error_Domain(self.ptr))
-    }
-
-    public var message: String {
-        String(cString: BtcK_Error_Message(self.ptr))
-    }
-
-    deinit {
-        BtcK_Error_Free(self.ptr)
-    }
-}
-
-// MARK: - ScriptPubkey
-
-public class ScriptPubkey {
-    internal var ptr: OpaquePointer
-
-    public init(raw: Data) throws {
-        var err: OpaquePointer? = nil
-        let ptr = raw.withUnsafeBytes({ buf in
-            BtcK_ScriptPubkey_New(buf.baseAddress, raw.count, &err)
-        })
-        if let err {
-            throw BtcKError(err)
-        }
-        self.ptr = ptr!
-    }
-
-    internal init(ptr: OpaquePointer) {
-        self.ptr = ptr
-    }
-
-    public func asBytes() -> Data {
-        var len: size_t = 0
-        guard let bytes = BtcK_ScriptPubkey_AsBytes(ptr, &len) else { return Data() }
-        return Data(bytes: bytes, count: len)
-    }
-
-    deinit {
-        BtcK_ScriptPubkey_Free(ptr)
-    }
-}
-
-// MARK: - TransactionOutput
-
-public class TransactionOutput {
-    internal var ptr: OpaquePointer
-
-    public init?(amount: Int64, scriptPubkey: ScriptPubkey) throws {
-        var err: OpaquePointer? = nil
-        let ptr = BtcK_TransactionOutput_New(amount, scriptPubkey.ptr, &err)
-        if let err {
-            throw BtcKError(err)
-        }
-        self.ptr = ptr!
-    }
-
-    internal init(ptr: OpaquePointer) {
-        self.ptr = ptr
-    }
-
-    public var amount: Int64 {
-        return BtcK_TransactionOutput_GetAmount(ptr)
-    }
-
-    public var scriptPubkey: ScriptPubkey {
-        get throws {
-            var err: OpaquePointer? = nil
-            let sp = BtcK_TransactionOutput_GetScriptPubkey(self.ptr, &err)
-            if let err {
-                throw BtcKError(err)
-            }
-            return ScriptPubkey(ptr: sp!)
-        }
-    }
-
-    deinit {
-        BtcK_TransactionOutput_Free(ptr)
-    }
-}
-
-// MARK: - Transaction
-
-public class Transaction {
-    internal var ptr: OpaquePointer
-
-    public init(raw: Data) throws {
-        var err: OpaquePointer? = nil
-        let ptr = raw.withUnsafeBytes({ buf in
-            BtcK_Transaction_New(buf.baseAddress, raw.count, &err)
-        })
-        if let err {
-            throw BtcKError(err)
-        }
-        self.ptr = ptr!
-    }
-
-    internal init(ptr: OpaquePointer) {
-        self.ptr = ptr
-    }
-
-    public func asBytes() -> Data {
-        var len: size_t = 0
-        guard let bytes = BtcK_Transaction_AsBytes(ptr, &len) else { return Data() }
-        return Data(bytes: bytes, count: len)
-    }
-
-    deinit {
-        BtcK_Transaction_Free(ptr)
-    }
-}
-
 // MARK: - BlockHash
 
 public struct BlockHash {
@@ -181,9 +55,16 @@ public class Block {
     }
 
     public var data: Data {
-        var len: size_t = 0
-        guard let bytes = BtcK_Block_AsBytes(ptr, &len) else { return Data() }
-        return Data(bytes: bytes, count: len)
+        var buffer = Data()
+        let callback: @convention(c) (UnsafeRawPointer?, size_t, UnsafeMutableRawPointer?) -> Int32 = { bytes, sz, userdata in
+            guard let bytes, let userdata else { return -1 }
+            let dataPtr = userdata.assumingMemoryBound(to: Data.self)
+            dataPtr.pointee.append(bytes.assumingMemoryBound(to: UInt8.self), count: sz)
+            return 0
+        }
+        let result = BtcK_Block_ToBytes(ptr, writeCallback, &buffer)
+        guard result == 0 else { return Data() }
+        return buffer
     }
 
     public var hash: BlockHash {
