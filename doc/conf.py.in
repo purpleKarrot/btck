@@ -7,7 +7,15 @@ copyright = '2025, The Bitcoin Core developers'
 author = 'The Bitcoin Core developers'
 release = '@PROJECT_VERSION@'
 
-extensions = ['sphinx_tabs.tabs']
+extensions = [
+    'sphinx.ext.intersphinx',
+    'sphinx_tabs.tabs',
+]
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+}
+
 templates_path = ['@CMAKE_CURRENT_SOURCE_DIR@/templates']
 
 html_static_path = ['@CMAKE_CURRENT_SOURCE_DIR@/static']

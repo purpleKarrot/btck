@@ -33,7 +33,7 @@ Identifier names in the C library follow a strict ``<prefix>_<type>`` or
 ``BtcK``, ensuring consistency and clear association with the library. Both
 ``<type>`` and ``<member>`` use PascalCase, which makes the three components --
 prefix, type, and member -- easy to distinguish at a glance. For example,
-``BtcK_Transaction_New`` and ``BtcK_Transaction_CountOutputs` adhere to this
+``BtcK_Transaction_New`` and ``BtcK_Transaction_CountOutputs`` adhere to this
 pattern.
 
 In higher-level languages, identifier naming follows the conventions of each
@@ -66,7 +66,7 @@ language.
     #include <btck/btck.hpp>
 
     int main() {
-      auto const tx = btck::transaction(data);
+      auto const tx = btck::transaction{data};
       std::println("outputs: {}", tx.outputs().size());
     }
 
