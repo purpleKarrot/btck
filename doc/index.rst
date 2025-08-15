@@ -19,6 +19,7 @@ Design
    /design/memory_management
    /design/object_lifetime
    /design/error_handling
+   /design/enumerations
    /design/composability
    /design/delegates
    /design/testing
